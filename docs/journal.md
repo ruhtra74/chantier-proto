@@ -52,3 +52,24 @@ décisions prises. Ce journal alimente le bilan (étape 10.8) et le rapport de p
   4 Mo à cause de Babylon.js et de l'inspecteur, chargé en chunk lazy) ; FPS 48 en Chrome headless
   avec SwiftShader (WebGL2), aucune erreur console. Assets encore en primitives : les GLB ne sont
   pas encore modélisés.
+
+## 2026-11-11 — étape 2 (assets provisoires) et bascule sur les GLB
+
+- Temps passé : à compléter par l'équipe.
+- Tâches réalisées : script Blender headless `blender/build_assets.py` (engin + cône, matériaux
+  couleur de base, échelles appliquées, +Y up), export de `blender/engin.blend`,
+  `blender/cone.blend`, `apps/web/public/models/engin.glb` et `cone.glb` ; outil de contrôle
+  `blender/verify_glb.mjs` ; chargement des GLB dans `load-assets.ts` et bascule de
+  `USE_GLB_ASSETS` à `true`.
+- Aide de l'IA : écriture du script Blender et du vérificateur, diagnostic du chargement glTF dans
+  Babylon, contrôle de la scène via le protocole DevTools (hiérarchie, positions, triangles, FPS).
+- Problèmes rencontrés / solutions :
+  - avec plusieurs matériaux, le chargeur glTF de Babylon crée un nœud parent et un maillage par
+    primitive ; `meshes[0]` pointait sur la racine sans géométrie, donc les clones de cônes étaient
+    vides. Corrigé en clonant le nœud `cone` complet (enfants compris) et en stockant les racines
+    de cônes dans `GameAssets.cones` ;
+  - le nom des roues a été vérifié après conversion : l'avant est bien en +Z dans Babylon ;
+  - Blender 5.3 signale `Material.use_nodes` comme déprécié pour Blender 6.0 (sans impact ici).
+- Mesures : `engin.glb` 119 Ko, 1 844 triangles, bbox 2,1 × 1,95 × 3,07 m ; `cone.glb` 8 Ko,
+  104 triangles, bbox 0,56 × 0,70 × 0,56 m ; FPS 32–39 en Chrome headless avec SwiftShader, aucune
+  erreur console, trois cônes actifs aux positions du scénario.

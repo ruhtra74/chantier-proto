@@ -1,13 +1,20 @@
 # Modèles 3D
 
-Déposer ici les fichiers exportés depuis Blender :
+Contient les assets chargés par la scène :
 
-- `engin.glb` — l'engin, origine au centre de la base, avant vers −Y dans Blender ;
-- `cone.glb` — le cône, origine au centre de la base.
+- `engin.glb` — engin provisoire : parent vide `engin` avec `corps`, `cabine` et quatre roues ;
+  origine au centre de la base, au niveau du sol, avant vers +Z dans le repère Babylon ;
+- `cone.glb` — cône provisoire, origine au centre de la base.
 
-Ils seront servis à l'URL `/models/engin.glb` et `/models/cone.glb`.
+Les fichiers sont générés par le script Blender du dépôt :
 
-Tant que ces fichiers sont absents, la scène utilise des primitives. Pour basculer sur les GLB,
-passer `USE_GLB_ASSETS` à `true` dans `src/app/game/engine/load-assets.ts`.
+```bash
+blender --background --factory-startup --python blender/build_assets.py
+node blender/verify_glb.mjs apps/web/public/models/engin.glb apps/web/public/models/cone.glb
+```
 
-Conventions d'export détaillées : `blender/README.md` (étape 2).
+Ils sont servis à `/models/engin.glb` et `/models/cone.glb`. Les conventions d'export et la
+procédure de remplacement par de vrais modèles sont décrites dans `blender/README.md`.
+
+Pour revenir aux primitives de repli, passer `USE_GLB_ASSETS` à `false` dans
+`src/app/game/engine/load-assets.ts`.

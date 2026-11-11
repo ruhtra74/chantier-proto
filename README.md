@@ -12,8 +12,8 @@ pur partagé entre le navigateur et un serveur NestJS qui rejoue les sessions.
 | ----- | -------------------------------------------------------------------------- | ------- |
 | 0     | Préparation du dépôt (pnpm, TypeScript, ESLint, Prettier, journal)         | ✅      |
 | 1     | Paquet `@chantier/domain` (schémas, score, réducteur, rejeu, tests, build) | ✅      |
-| 2     | Assets Blender (`engin.glb`, `cone.glb`)                                   | à faire |
-| 3     | Application Angular, scène Babylon.js (primitives)                         | ✅      |
+| 2     | Assets Blender (`engin.glb`, `cone.glb`, générés par script)               | ✅      |
+| 3     | Application Angular, scène Babylon.js (GLB chargés)                        | ✅      |
 | 4–7   | Déplacement, caméra de poursuite, physique Havok, intégration, interface   | à faire |
 | 8–10  | API NestJS, connexion front/back, mesures et bilan                         | à faire |
 
@@ -40,20 +40,21 @@ pnpm --filter web start   # serveur de développement Angular (http://localhost:
 développement actif du domaine, lancer `pnpm --filter @chantier/domain dev` dans un second terminal
 pour recompiler en continu.
 
-## Scène actuelle (étape 3)
+## Scène actuelle (étapes 2–3)
 
-La scène affiche le sol, la zone d'arrivée et un engin provisoire (boîte + roues) avec trois cônes
-aux positions du scénario `chantier-1`. Commandes : glisser pour orbiter, molette pour zoomer,
-`I` pour l'inspecteur Babylon.
+La scène charge `engin.glb` (parent `engin`, corps, cabine, quatre roues) et instancie `cone.glb`
+trois fois aux positions du scénario `chantier-1`, sur un sol à grille et une zone d'arrivée.
+Commandes : glisser pour orbiter, molette pour zoomer, `I` pour l'inspecteur Babylon.
 
-Pour utiliser les vrais modèles Blender : déposer `engin.glb` et `cone.glb` dans
-`apps/web/public/models/`, puis passer `USE_GLB_ASSETS` à `true` dans
-`apps/web/src/app/game/engine/load-assets.ts`.
+Les assets provisoires sont générés par `blender/build_assets.py` (voir `blender/README.md`). Pour
+les remplacer par de vrais modèles, exporter les GLB par-dessus en respectant les mêmes conventions :
+aucun changement de code n'est nécessaire.
 
 ## Structure
 
 ```
 chantier-proto/
+├─ blender/                 script de génération et conventions des assets
 ├─ docs/journal.md          journal de bord (temps, IA, problèmes, mesures)
 ├─ packages/domain/         règles métier pures, partagées front + back
 └─ apps/

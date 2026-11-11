@@ -13,16 +13,18 @@ pnpm --filter web start
 
 Ouvrir http://localhost:4200. Le script `prestart` recompile `@chantier/domain` avant le serveur.
 
-## Scène actuelle (étape 3)
+## Scène actuelle (étapes 2–3)
 
 - sol avec grille procédurale ;
 - zone d'arrivée (disque + anneau) positionnée par le scénario ;
-- engin provisoire (boîte, cabine, 4 roues) et trois cônes primitifs ;
+- `engin.glb` chargé comme racine mobile (`engin` → `corps`, `cabine`, quatre roues) ;
+- `cone.glb` chargé une fois puis cloné aux trois positions du scénario ;
 - caméra orbitale (glisser, molette) ;
 - FPS affiché, inspecteur Babylon sur `I`.
 
-Pour brancher les modèles Blender : déposer `engin.glb` et `cone.glb` dans `public/models/`, puis
-passer `USE_GLB_ASSETS` à `true` dans `src/app/game/engine/load-assets.ts`.
+Les assets proviennent de `blender/build_assets.py` (voir `blender/README.md`). Ils sont servis à
+`/models/engin.glb` et `/models/cone.glb`. Pour revenir aux primitives de repli, passer
+`USE_GLB_ASSETS` à `false` dans `src/app/game/engine/load-assets.ts`.
 
 ## Structure
 
@@ -35,7 +37,7 @@ src/app/
    ├─ game-canvas.component.*   crée et détruit le moteur Babylon
    └─ engine/
       ├─ create-scene.ts        sol, lumières, zone d'arrivée, caméra
-      ├─ load-assets.ts         GLB ou primitives de repli
+      ├─ load-assets.ts         GLB (ou primitives de repli)
       ├─ camera.ts              caméra orbitale provisoire
       ├─ input.ts               clavier QWERTY/AZERTY (préparation étape 4)
       └─ inspector.ts           inspecteur chargé à la demande

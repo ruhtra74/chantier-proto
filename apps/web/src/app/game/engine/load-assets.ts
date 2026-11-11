@@ -8,10 +8,10 @@ import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
 
 /**
- * Passe à true quand `engin.glb` et `cone.glb` sont présents dans `public/models/`.
- * Tant que les assets Blender n'existent pas, la scène utilise des primitives.
+ * Assets Blender chargés depuis `public/models/` (générés par `blender/build_assets.py`).
+ * Repasser à false pour revenir aux primitives de repli.
  */
-export const USE_GLB_ASSETS = false;
+export const USE_GLB_ASSETS = true;
 
 const ENGINE_URL = '/models/engin.glb';
 const CONE_URL = '/models/cone.glb';
@@ -19,8 +19,8 @@ const CONE_URL = '/models/cone.glb';
 export type GameAssets = {
   /** Racine de l'engin : la déplacer suffit à déplacer tout le véhicule. */
   engineRoot: TransformNode;
-  /** Cônes indexés par l'identifiant du scénario (utilisé pour les collisions à l'étape 5). */
-  cones: Map<string, AbstractMesh>;
+  /** Racines des cônes indexées par l'identifiant du scénario (utilisées à l'étape 5). */
+  cones: Map<string, TransformNode>;
   /** true si les GLB Blender ont été chargés, false si les primitives sont utilisées. */
   usesGlb: boolean;
 };
@@ -64,7 +64,7 @@ function createPlaceholderAssets(scene: Scene, scenario: Scenario): GameAssets {
     wheel.material = wheelMaterial;
   }
 
-  const cones = new Map<string, AbstractMesh>();
+  const cones = new Map<string, TransformNode>();
   for (const coneDefinition of scenario.cones) {
     const cone = CreateCylinder(
       `cone-${coneDefinition.id}`,
@@ -87,27 +87,20 @@ async function loadGlbAssets(scene: Scene, scenario: Scenario): Promise<GameAsse
   ]);
 
   const engineImport = await ImportMeshAsync(ENGINE_URL, scene);
-  const engineRoot =
-    engineImport.transformNodes.find((node) => node.name === 'engin') ?? engineImport.meshes[0];
-
-  if (!engineRoot) {
-    throw new Error(`Le fichier ${ENGINE_URL} ne contient aucun maillage exploitable.`);
-  }
+  const engineRoot = findImportedNode(engineImport, 'engin', ENGINE_URL);
 
   engineRoot.name = 'engin';
   engineRoot.position.set(scenario.start.x, 0, scenario.start.z);
   engineRoot.rotation.y = (scenario.start.headingDeg * Math.PI) / 180;
 
   const coneImport = await ImportMeshAsync(CONE_URL, scene);
-  const coneTemplate = coneImport.meshes[0];
+  const coneRoot = findImportedNode(coneImport, 'cone', CONE_URL);
 
-  if (!coneTemplate) {
-    throw new Error(`Le fichier ${CONE_URL} ne contient aucun maillage exploitable.`);
-  }
-
-  const cones = new Map<string, AbstractMesh>();
+  const cones = new Map<string, TransformNode>();
   for (const coneDefinition of scenario.cones) {
-    const clone = coneTemplate.clone(`cone-${coneDefinition.id}`, null, true);
+    // Le cône peut être un maillage simple ou un nœud parent (plusieurs matériaux) :
+    // dans les deux cas on clone toute la hiérarchie.
+    const clone = coneRoot.clone(`cone-${coneDefinition.id}`, null);
     if (!clone) continue;
 
     clone.position.set(coneDefinition.x, 0, coneDefinition.z);
@@ -115,10 +108,29 @@ async function loadGlbAssets(scene: Scene, scenario: Scenario): Promise<GameAsse
     cones.set(coneDefinition.id, clone);
   }
 
-  // Le maillage modèle ne doit pas rester visible à l'origine.
-  coneTemplate.setEnabled(false);
+  // Le modèle source ne doit pas rester visible à l'origine.
+  coneRoot.setEnabled(false);
 
   return { engineRoot, cones, usesGlb: true };
+}
+
+/**
+ * Retrouve un nœud exporté par Blender. Le chargeur glTF place les objets sans géométrie
+ * (comme le vide `engin`) dans `transformNodes`, tandis qu'un maillage simple apparaît dans
+ * `meshes`. On cherche donc dans les deux listes, sans renommer un enfant au passage.
+ */
+function findImportedNode(
+  imported: { transformNodes: TransformNode[]; meshes: AbstractMesh[] },
+  name: string,
+  fileUrl: string,
+): TransformNode {
+  const node =
+    imported.transformNodes.find((candidate) => candidate.name === name) ??
+    imported.meshes.find((candidate) => candidate.name === name);
+
+  if (node) return node;
+
+  throw new Error(`Le fichier ${fileUrl} ne contient aucune racine « ${name} ».`);
 }
 
 function solidMaterial(scene: Scene, name: string, hexColor: string): StandardMaterial {
@@ -128,8 +140,18 @@ function solidMaterial(scene: Scene, name: string, hexColor: string): StandardMa
   return material;
 }
 
-/** Utilisé par l'étape 5 pour retrouver l'identifiant d'un cône depuis un maillage. */
-export function coneIdOf(mesh: AbstractMesh): string | undefined {
-  const metadata = mesh.metadata as { coneId?: string } | null | undefined;
-  return metadata?.coneId;
+/**
+ * Utilisé par l'étape 5 pour retrouver l'identifiant d'un cône depuis n'importe quel nœud
+ * de sa hiérarchie (le GLB peut exposer un parent et des enfants par matériau).
+ */
+export function coneIdOf(node: TransformNode): string | undefined {
+  let current: TransformNode | null = node;
+
+  while (current) {
+    const metadata = current.metadata as { coneId?: string } | null | undefined;
+    if (metadata?.coneId) return metadata.coneId;
+    current = current.parent instanceof TransformNode ? current.parent : null;
+  }
+
+  return undefined;
 }
