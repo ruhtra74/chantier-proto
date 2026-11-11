@@ -11,10 +11,13 @@ import {
 import { getScenario } from '@chantier/domain';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import type { Scene } from '@babylonjs/core/scene';
+import { updateChaseCamera } from './engine/camera';
 import { createScene } from './engine/create-scene';
 import { KeyboardInput } from './engine/input';
 import { toggleInspector } from './engine/inspector';
+import type { GameAssets } from './engine/load-assets';
 import { USE_GLB_ASSETS, loadAssets } from './engine/load-assets';
+import { VehicleController } from './engine/vehicle';
 
 @Component({
   selector: 'app-game-canvas',
@@ -27,13 +30,17 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
   private readonly scenario = getScenario('chantier-1');
 
   readonly fps = signal(0);
+  readonly distance = signal(0);
   readonly error = signal<string | null>(null);
   readonly placeholderAssets = !USE_GLB_ASSETS;
 
   private engine?: Engine;
   private scene?: Scene;
   private input?: KeyboardInput;
+  private assets?: GameAssets;
+  private vehicle?: VehicleController;
   private fpsTimer?: number;
+  private destroyed = false;
 
   private readonly handleResize = (): void => {
     this.engine?.resize();
@@ -50,19 +57,34 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
     const engine = new Engine(canvas, true, { stencil: true }, true);
     this.engine = engine;
 
-    const { scene } = createScene(engine, canvas, scenario);
+    const { scene, camera } = createScene(engine, scenario);
     this.scene = scene;
 
-    void loadAssets(scene, scenario).catch((error: unknown) => {
-      console.error('Échec du chargement des assets', error);
-      this.error.set(
-        `Impossible de charger les assets : ${error instanceof Error ? error.message : String(error)}`,
-      );
-    });
-
-    this.input = new KeyboardInput(() => {
+    const input = new KeyboardInput(() => {
       void toggleInspector(scene);
     });
+    this.input = input;
+
+    void loadAssets(scene, scenario)
+      .then((assets) => {
+        if (this.destroyed) return;
+
+        this.assets = assets;
+        this.vehicle = new VehicleController(assets.engineRoot, input, (event) => {
+          if (this.destroyed) return;
+          if (event.type === 'MOVED') {
+            this.distance.update((total) => total + event.distance);
+          }
+        });
+        updateChaseCamera(camera, assets.engineRoot, 0, true);
+      })
+      .catch((error: unknown) => {
+        if (this.destroyed) return;
+        console.error('Échec du chargement des assets', error);
+        this.error.set(
+          `Impossible de charger les assets : ${error instanceof Error ? error.message : String(error)}`,
+        );
+      });
 
     window.addEventListener('resize', this.handleResize);
     this.fpsTimer = window.setInterval(() => {
@@ -73,12 +95,21 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
     // En mode zoneless, cette précaution reste utile si le mode zone est réactivé.
     this.zone.runOutsideAngular(() => {
       engine.runRenderLoop(() => {
+        const deltaSeconds = Math.min(engine.getDeltaTime() / 1000, 0.1);
+
+        this.vehicle?.update(deltaSeconds);
+        if (this.assets) {
+          updateChaseCamera(camera, this.assets.engineRoot, deltaSeconds);
+        }
+
         scene.render();
       });
     });
   }
 
   ngOnDestroy(): void {
+    this.destroyed = true;
+
     if (this.fpsTimer !== undefined) {
       window.clearInterval(this.fpsTimer);
       this.fpsTimer = undefined;
@@ -87,6 +118,8 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
     window.removeEventListener('resize', this.handleResize);
     this.input?.dispose();
     this.input = undefined;
+    this.vehicle = undefined;
+    this.assets = undefined;
 
     this.engine?.stopRenderLoop();
     this.scene?.dispose();

@@ -13,13 +13,15 @@ pnpm --filter web start
 
 Ouvrir http://localhost:4200. Le script `prestart` recompile `@chantier/domain` avant le serveur.
 
-## Scène actuelle (étapes 2–3)
+## Scène actuelle (étapes 2–4)
 
 - sol avec grille procédurale ;
 - zone d'arrivée (disque + anneau) positionnée par le scénario ;
 - `engin.glb` chargé comme racine mobile (`engin` → `corps`, `cabine`, quatre roues) ;
 - `cone.glb` chargé une fois puis cloné aux trois positions du scénario ;
-- caméra orbitale (glisser, molette) ;
+- conduite au clavier (ZQSD / WASD / flèches) avec accélération et marche arrière ;
+- caméra de poursuite lissée derrière l'engin ;
+- distance parcourue affichée, émise en `MOVED` par lots de 100 ms ;
 - FPS affiché, inspecteur Babylon sur `I`.
 
 Les assets proviennent de `blender/build_assets.py` (voir `blender/README.md`). Ils sont servis à
@@ -36,10 +38,11 @@ src/app/
 └─ game/
    ├─ game-canvas.component.*   crée et détruit le moteur Babylon
    └─ engine/
-      ├─ create-scene.ts        sol, lumières, zone d'arrivée, caméra
+      ├─ create-scene.ts        sol, lumières, zone d'arrivée
       ├─ load-assets.ts         GLB (ou primitives de repli)
-      ├─ camera.ts              caméra orbitale provisoire
-      ├─ input.ts               clavier QWERTY/AZERTY (préparation étape 4)
+      ├─ camera.ts              caméra de poursuite
+      ├─ vehicle.ts             conduite sans physique + lots MOVED
+      ├─ input.ts               clavier QWERTY/AZERTY
       └─ inspector.ts           inspecteur chargé à la demande
 ```
 

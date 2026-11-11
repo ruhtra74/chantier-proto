@@ -73,3 +73,25 @@ décisions prises. Ce journal alimente le bilan (étape 10.8) et le rapport de p
 - Mesures : `engin.glb` 119 Ko, 1 844 triangles, bbox 2,1 × 1,95 × 3,07 m ; `cone.glb` 8 Ko,
   104 triangles, bbox 0,56 × 0,70 × 0,56 m ; FPS 32–39 en Chrome headless avec SwiftShader, aucune
   erreur console, trois cônes actifs aux positions du scénario.
+
+## 2026-11-11 — étape 4 (déplacement et caméra de poursuite)
+
+- Temps passé : à compléter par l'équipe.
+- Tâches réalisées : `VehicleController` sans physique (accélération, freinage, marche arrière,
+  rotation), caméra de poursuite lissée derrière l'engin, mesure de la distance entre deux positions
+  et émission de `MOVED` par lots de 100 ms, distance affichée dans le HUD, clavier QWERTY / AZERTY /
+  flèches avec blocage de la répétition et du défilement.
+- Aide de l'IA : implémentation des modules `vehicle.ts` et `camera.ts`, puis test fonctionnel
+  automatisé via le protocole DevTools (envoi de vraies touches, relevé des positions, de la caméra
+  et du nombre d'événements).
+- Problèmes rencontrés / solutions :
+  - la distance affichée était inférieure à la position pendant le freinage : le relevé était fait
+    avant l'arrêt complet ; le test attend désormais que la vitesse soit nulle, et `flushMoved()`
+    émet le reliquat quand l'engin s'arrête ;
+  - la marche arrière a été validée par projection du déplacement sur le cap, et non sur l'axe Z,
+    car l'engin peut être tourné ;
+  - en mode headless, le FPS chute pendant les tests CDP ; la mesure de référence est faite au repos.
+- Mesures : 2 s d'accélération puis freinage = 15,223 m parcourus ; distance affichée = somme des
+  `MOVED` = 15,223 m, en 21 lots ; virage à gauche jusqu'à −1,954 rad ; marche arrière opposée au
+  cap ; caméra à 9 m derrière et 4,5 m de haut ; FPS 36 au repos en Chrome headless avec
+  SwiftShader (non représentatif d'un GPU réel) ; aucune erreur console.

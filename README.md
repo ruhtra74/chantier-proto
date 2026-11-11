@@ -14,7 +14,8 @@ pur partagé entre le navigateur et un serveur NestJS qui rejoue les sessions.
 | 1     | Paquet `@chantier/domain` (schémas, score, réducteur, rejeu, tests, build) | ✅      |
 | 2     | Assets Blender (`engin.glb`, `cone.glb`, générés par script)               | ✅      |
 | 3     | Application Angular, scène Babylon.js (GLB chargés)                        | ✅      |
-| 4–7   | Déplacement, caméra de poursuite, physique Havok, intégration, interface   | à faire |
+| 4     | Déplacement clavier, caméra de poursuite, distance par lots `MOVED`        | ✅      |
+| 5–7   | Physique Havok, intégration domaine, interface                             | à faire |
 | 8–10  | API NestJS, connexion front/back, mesures et bilan                         | à faire |
 
 ## Prérequis
@@ -40,11 +41,15 @@ pnpm --filter web start   # serveur de développement Angular (http://localhost:
 développement actif du domaine, lancer `pnpm --filter @chantier/domain dev` dans un second terminal
 pour recompiler en continu.
 
-## Scène actuelle (étapes 2–3)
+## Scène actuelle (étapes 2–4)
 
 La scène charge `engin.glb` (parent `engin`, corps, cabine, quatre roues) et instancie `cone.glb`
 trois fois aux positions du scénario `chantier-1`, sur un sol à grille et une zone d'arrivée.
-Commandes : glisser pour orbiter, molette pour zoomer, `I` pour l'inspecteur Babylon.
+
+L'engin se conduit avec **ZQSD**, **WASD** ou les **flèches** (avant, arrière, gauche, droite).
+La caméra de poursuite suit l'engin en douceur. La distance parcourue est affichée dans le HUD ;
+elle est émise par lots de 100 ms sous forme d'événements `MOVED`, prêts pour le futur
+`GameController`. `I` ouvre l'inspecteur Babylon.
 
 Les assets provisoires sont générés par `blender/build_assets.py` (voir `blender/README.md`). Pour
 les remplacer par de vrais modèles, exporter les GLB par-dessus en respectant les mêmes conventions :

@@ -2,10 +2,11 @@
 
 <div class="hud">
   <span class="badge">FPS {{ fps() }}</span>
+  <span class="badge">Distance {{ distance().toFixed(1).replace('.', ',') }} m</span>
   @if (placeholderAssets) {
     <span class="badge badge-warn">Primitives (GLB à venir)</span>
   }
-  <span class="hint">Glisser : orbite · Molette : zoom · I : inspecteur</span>
+  <span class="hint">ZQSD / WASD / Flèches : conduire · I : inspecteur</span>
 </div>
 
 @if (error(); as message) {

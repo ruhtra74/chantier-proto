@@ -1,5 +1,5 @@
 import type { Scenario } from '@chantier/domain';
-import type { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
+import type { TargetCamera } from '@babylonjs/core/Cameras/targetCamera';
 import type { Engine } from '@babylonjs/core/Engines/engine';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
@@ -11,22 +11,18 @@ import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { CreateGround } from '@babylonjs/core/Meshes/Builders/groundBuilder';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { Scene } from '@babylonjs/core/scene';
-import { createOrbitCamera } from './camera';
+import { createChaseCamera } from './camera';
 
 export type GameScene = {
   scene: Scene;
-  camera: ArcRotateCamera;
+  camera: TargetCamera;
 };
 
 /**
- * Crée la scène statique de l'étape 3 : sol, lumières, zone d'arrivée, caméra.
+ * Crée la scène : sol, lumières, zone d'arrivée, caméra de poursuite.
  * Aucune règle métier ici : les positions viennent uniquement du scénario.
  */
-export function createScene(
-  engine: Engine,
-  canvas: HTMLCanvasElement,
-  scenario: Scenario,
-): GameScene {
+export function createScene(engine: Engine, scenario: Scenario): GameScene {
   const scene = new Scene(engine);
   scene.clearColor = new Color4(0.62, 0.73, 0.85, 1);
 
@@ -44,7 +40,7 @@ export function createScene(
 
   createTargetZone(scene, scenario.target);
 
-  const camera = createOrbitCamera(scene, canvas, scenario);
+  const camera = createChaseCamera(scene, scenario);
 
   return { scene, camera };
 }
