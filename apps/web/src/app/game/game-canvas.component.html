@@ -1,0 +1,13 @@
+<canvas #canvas class="game-canvas" tabindex="0"></canvas>
+
+<div class="hud">
+  <span class="badge">FPS {{ fps() }}</span>
+  @if (placeholderAssets) {
+    <span class="badge badge-warn">Primitives (GLB à venir)</span>
+  }
+  <span class="hint">Glisser : orbite · Molette : zoom · I : inspecteur</span>
+</div>
+
+@if (error(); as message) {
+  <p class="error">{{ message }}</p>
+}

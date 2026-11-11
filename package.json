@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "pnpm -r build",
+    "dev:web": "pnpm --filter web start",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
     "lint": "eslint .",

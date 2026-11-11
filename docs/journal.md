@@ -30,3 +30,25 @@ décisions prises. Ce journal alimente le bilan (étape 10.8) et le rapport de p
     `package.json` et `savePrefix: ""` est défini dans `pnpm-workspace.yaml`.
 - Mesures : `pnpm test` → 42 tests réussis en moins d'une seconde ; build ESM 6,5 Ko, CJS 8,6 Ko
   (hors sourcemaps).
+
+## 2026-11-10 — étape 3 (application Angular + scène Babylon.js)
+
+- Temps passé : à compléter par l'équipe.
+- Tâches réalisées : application Angular 22 zoneless (`apps/web`), scène Babylon.js 9.35 avec sol
+  60×60 à grille procédurale, zone d'arrivée issue du scénario, engin provisoire (boîte, cabine,
+  4 roues) et trois cônes ; caméra orbitale ; FPS affiché ; inspecteur Babylon sur `I` ; clavier
+  QWERTY/AZERTY préparé pour l'étape 4 ; destruction complète du moteur au `ngOnDestroy`.
+- Aide de l'IA : scaffolding du CLI, écriture des modules `engine/`, configuration des budgets et
+  des scripts `prestart`/`prebuild`, vérification dans un Chrome headless.
+- Problèmes rencontrés / solutions :
+  - le CLI a créé un `pnpm-workspace.yaml` local à `apps/web` ; supprimé pour rester dans le
+    workspace racine ;
+  - Angular ne compile pas les sources de `@chantier/domain` ; ajout d'un `prestart`/`prebuild` qui
+    lance le build tsup du paquet ;
+  - `pnpm --filter web start -- --port 4200` passe un `--` de trop au CLI ; utiliser
+    `pnpm --filter web exec ng serve --port 4200 --host 127.0.0.1` ;
+  - les dépendances Angular/Babylon ont été épinglées en versions exactes après le scaffolding.
+- Mesures : bundle initial de production 1,84 Mo brut / 412 Ko transféré (budget relevé à 2,5 Mo /
+  4 Mo à cause de Babylon.js et de l'inspecteur, chargé en chunk lazy) ; FPS 48 en Chrome headless
+  avec SwiftShader (WebGL2), aucune erreur console. Assets encore en primitives : les GLB ne sont
+  pas encore modélisés.
