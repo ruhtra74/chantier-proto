@@ -182,3 +182,17 @@ décisions prises. Ce journal alimente le bilan (étape 10.8) et le rapport de p
   neuf (carburant 100, distance 0, journal vide) ; `Échap` puis retour accueil validés ; panne
   sèche simulée : score 0 et écran « Panne sèche » ; accès direct à `/fin` sans partie : message de
   repli ; aucune erreur console.
+
+## 2026-11-12 — correctif (inspecteur Babylon)
+
+- Temps passé : à compléter par l'équipe.
+- Tâches réalisées : `toggleInspector` charge désormais les effets de bord ES6 de Babylon
+  (`@babylonjs/core/Debug/debugLayer` et `@babylonjs/core/Culling/ray`) avant
+  `@babylonjs/inspector`, une seule fois et seulement au premier appui sur `I`.
+- Aide de l'IA : diagnostic du plantage, import unique mémorisé (`loadInspector`) et test CDP dédié.
+- Problèmes rencontrés / solutions :
+  - l'inspecteur se chargeait mais plantait au premier rendu (`Ray needs to be imported…`, erreurs
+    React `Dropdown` puis `toEuler` dans les lignes de propriété) : les imports d'effets de bord
+    exigés par les modules ES6 manquaient ; ils précèdent maintenant l'import de l'inspecteur.
+- Mesures : `I` ouvre l'inspecteur (44 racines Fluent UI montées), un second `I` le referme
+  (0 racine), aucune erreur console ; régression de l'étape 7 repassée (11 contrôles au vert).

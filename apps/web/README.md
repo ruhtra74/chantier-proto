@@ -39,7 +39,8 @@ Ouvrir http://localhost:4200. Le script `prestart` recompile `@chantier/domain` 
 - `GameSessionService` : issue de la partie (résultat, statistiques, `SessionSubmission`)
   conservée entre le composant de jeu et l'écran de fin ;
 - fin de partie : arrêt de l'engin, publication de l'issue puis navigation vers `/fin` ;
-- `R` relance une partie, `Échap` revient à l'accueil, `I` ouvre l'inspecteur Babylon.
+- `R` relance une partie, `Échap` revient à l'accueil, `I` ouvre l'inspecteur Babylon (module et
+  effets de bord `debugLayer`/`Ray` chargés à la demande).
 
 Les assets proviennent de `blender/build_assets.py` (voir `blender/README.md`). Ils sont servis à
 `/models/engin.glb` et `/models/cone.glb`. Pour revenir aux primitives de repli, passer
@@ -73,7 +74,7 @@ src/app/
       ├─ camera.ts              caméra de poursuite
       ├─ vehicle.ts             pilotage par vitesses, MOVED, CONE_HIT, arrivée
       ├─ input.ts               clavier QWERTY/AZERTY, R, Échap, I
-      └─ inspector.ts           inspecteur chargé à la demande
+      └─ inspector.ts           inspecteur et effets de bord Babylon chargés à la demande
 ```
 
 ## Scripts
