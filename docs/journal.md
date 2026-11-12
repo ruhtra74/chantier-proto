@@ -95,3 +95,35 @@ décisions prises. Ce journal alimente le bilan (étape 10.8) et le rapport de p
   `MOVED` = 15,223 m, en 21 lots ; virage à gauche jusqu'à −1,954 rad ; marche arrière opposée au
   cap ; caméra à 9 m derrière et 4,5 m de haut ; FPS 36 au repos en Chrome headless avec
   SwiftShader (non représentatif d'un GPU réel) ; aucune erreur console.
+
+## 2026-11-12 — étape 5 (physique Havok)
+
+- Temps passé : à compléter par l'équipe.
+- Tâches réalisées : `@babylonjs/havok` activé dans la scène (gravité −9,81 m/s²) ; le WASM est
+  copié dans `public/havok/` par `apps/web/scripts/copy-havok.mjs` puis servi par Angular (copie
+  gitignorée, lancée par `prestart`/`prebuild`) ; corps statique du sol et parois invisibles de
+  limite de terrain ; corps dynamique de l'engin (collider boîte, inertie bloquée sur les axes
+  horizontaux) ; corps dynamiques des trois cônes ; pilotage par vitesses linéaire et angulaire ;
+  collisions engin ↔ cône avec un `CONE_HIT` unique par cône ; détection d'arrivée avec un
+  `REACHED_TARGET` unique ; HUD enrichi (cônes touchés, badge « Arrivée »).
+- Aide de l'IA : modules `physics.ts` et `transform.ts`, réécriture de `vehicle.ts` en pilotage
+  physique, diagnostic et test fonctionnel automatisé via le protocole DevTools (chargement du
+  WASM, relevé des corps et de leurs boîtes englobantes, envoi de vraies touches, comptage des
+  événements).
+- Problèmes rencontrés / solutions :
+  - l'engin traversait le sol : après détachement du nœud importé, il héritait de la matrice monde
+    `diag(1, −1, 1)` du nœud `__root__` du chargeur glTF (échelle Y négative). Havok interprétait
+    le collider comme un miroir et le faisait tomber. Solution : la racine pilotée est désormais un
+    `TransformNode('engin')` propre ; le modèle glTF (`engin-modele`) reste son enfant et conserve
+    la conversion d'axes du chargeur, sans jamais appliquer d'échelle négative au nœud physique ;
+  - le cône percuté était projeté au-delà du sol de 60 m et tombait indéfiniment : ajout de quatre
+    parois statiques invisibles (2 m de haut) en limite de terrain. Une première version avait les
+    axes longs inversés et créait une barre en travers de l'aire de jeu, corrigée après contrôle
+    des boîtes englobantes des corps ;
+  - le test comparait la distance affichée à la somme des `MOVED` relevés après branchement du
+    journal : il faut retrancher la distance déjà parcourue avant le branchement.
+- Mesures : `HavokPhysics.wasm` 2,0 Mo (copié, non versionné) ; ligne droite jusqu'à l'arrivée =
+  24,509 m, cohérente avec la somme des `MOVED` ; un seul `CONE_HIT` (`c3`, déplacé d'environ
+  10,6 m) et un seul `REACHED_TARGET` ; altitude nulle sur tout le trajet, y compris contre la
+  paroi ; marche arrière validée ; caméra à 9 m derrière et 4,5 m de haut ; FPS 30–38 en Chrome
+  headless avec SwiftShader ; aucune erreur console.

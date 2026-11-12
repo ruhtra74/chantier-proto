@@ -3,6 +3,7 @@ import { TargetCamera } from '@babylonjs/core/Cameras/targetCamera';
 import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import type { Scene } from '@babylonjs/core/scene';
+import { headingOf } from './transform';
 
 /** Distance et hauteur de la caméra derrière l'engin, en mètres. */
 const CAMERA_DISTANCE = 9;
@@ -52,7 +53,7 @@ export function updateChaseCamera(
   deltaSeconds: number,
   snap = false,
 ): void {
-  const heading = root.rotation.y;
+  const heading = headingOf(root);
   const sin = Math.sin(heading);
   const cos = Math.cos(heading);
   const position = root.position;

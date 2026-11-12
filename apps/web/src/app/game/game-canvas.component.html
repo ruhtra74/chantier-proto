@@ -3,6 +3,10 @@
 <div class="hud">
   <span class="badge">FPS {{ fps() }}</span>
   <span class="badge">Distance {{ distance().toFixed(1).replace('.', ',') }} m</span>
+  <span class="badge">Cônes {{ conesHit() }}</span>
+  @if (arrived()) {
+    <span class="badge badge-ok">Arrivée</span>
+  }
   @if (placeholderAssets) {
     <span class="badge badge-warn">Primitives (GLB à venir)</span>
   }

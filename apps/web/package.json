@@ -3,9 +3,9 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "prestart": "pnpm --filter @chantier/domain build",
+    "prestart": "pnpm --filter @chantier/domain build && node scripts/copy-havok.mjs",
     "start": "ng serve",
-    "prebuild": "pnpm --filter @chantier/domain build",
+    "prebuild": "pnpm --filter @chantier/domain build && node scripts/copy-havok.mjs",
     "build": "ng build",
     "typecheck": "tsc -p tsconfig.app.json --noEmit",
     "watch": "ng build --watch --configuration development"

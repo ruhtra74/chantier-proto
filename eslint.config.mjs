@@ -10,11 +10,12 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   prettier,
   {
-    files: ["blender/**/*.mjs"],
+    files: ["blender/**/*.mjs", "apps/web/scripts/**/*.mjs"],
     languageOptions: {
       globals: {
         console: "readonly",
         process: "readonly",
+        URL: "readonly",
       },
     },
   },

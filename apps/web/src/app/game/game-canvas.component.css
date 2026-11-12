@@ -41,6 +41,10 @@
   background: rgb(180 83 9 / 85%);
 }
 
+.badge-ok {
+  background: rgb(21 128 61 / 85%);
+}
+
 .hint {
   margin-left: auto;
   padding: 6px 10px;

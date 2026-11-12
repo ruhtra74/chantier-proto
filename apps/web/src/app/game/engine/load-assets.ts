@@ -6,6 +6,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import type { Scene } from '@babylonjs/core/scene';
+import { setHeading } from './transform';
 
 /**
  * Assets Blender chargés depuis `public/models/` (générés par `blender/build_assets.py`).
@@ -37,7 +38,7 @@ function createPlaceholderAssets(scene: Scene, scenario: Scenario): GameAssets {
 
   const engineRoot = new TransformNode('engin', scene);
   engineRoot.position.set(scenario.start.x, 0, scenario.start.z);
-  engineRoot.rotation.y = (scenario.start.headingDeg * Math.PI) / 180;
+  setHeading(engineRoot, (scenario.start.headingDeg * Math.PI) / 180);
 
   const chassis = CreateBox('corps', { width: 1.6, height: 0.6, depth: 2.6 }, scene);
   chassis.position.y = 0.75;
@@ -87,11 +88,20 @@ async function loadGlbAssets(scene: Scene, scenario: Scenario): Promise<GameAsse
   ]);
 
   const engineImport = await ImportMeshAsync(ENGINE_URL, scene);
-  const engineRoot = findImportedNode(engineImport, 'engin', ENGINE_URL);
+  const importedEngine = findImportedNode(engineImport, 'engin', ENGINE_URL);
 
-  engineRoot.name = 'engin';
+  // Le chargeur glTF enveloppe le modèle dans un nœud `__root__` qui porte la conversion
+  // d'axes (échelle négative). La physique pilote un nœud racine à transformation propre :
+  // on enveloppe donc le modèle dans un conteneur, sans jamais appliquer cette échelle
+  // négative au nœud qui porte le corps physique (Havok l'interpréterait comme un miroir).
+  const engineModel =
+    importedEngine.parent instanceof TransformNode ? importedEngine.parent : importedEngine;
+  engineModel.name = 'engin-modele';
+
+  const engineRoot = new TransformNode('engin', scene);
+  engineModel.parent = engineRoot;
   engineRoot.position.set(scenario.start.x, 0, scenario.start.z);
-  engineRoot.rotation.y = (scenario.start.headingDeg * Math.PI) / 180;
+  setHeading(engineRoot, (scenario.start.headingDeg * Math.PI) / 180);
 
   const coneImport = await ImportMeshAsync(CONE_URL, scene);
   const coneRoot = findImportedNode(coneImport, 'cone', CONE_URL);

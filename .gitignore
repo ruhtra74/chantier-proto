@@ -1,5 +1,7 @@
 node_modules/
 dist/
+# Copié depuis node_modules par apps/web/scripts/copy-havok.mjs.
+apps/web/public/havok/
 coverage/
 .angular/
 *.log

@@ -15,7 +15,8 @@ pur partagé entre le navigateur et un serveur NestJS qui rejoue les sessions.
 | 2     | Assets Blender (`engin.glb`, `cone.glb`, générés par script)               | ✅      |
 | 3     | Application Angular, scène Babylon.js (GLB chargés)                        | ✅      |
 | 4     | Déplacement clavier, caméra de poursuite, distance par lots `MOVED`        | ✅      |
-| 5–7   | Physique Havok, intégration domaine, interface                             | à faire |
+| 5     | Physique Havok (sol, engin, cônes, collisions, arrivée)                    | ✅      |
+| 6–7   | Intégration domaine (contrôleur, journal), interface                       | à faire |
 | 8–10  | API NestJS, connexion front/back, mesures et bilan                         | à faire |
 
 ## Prérequis
@@ -41,15 +42,20 @@ pnpm --filter web start   # serveur de développement Angular (http://localhost:
 développement actif du domaine, lancer `pnpm --filter @chantier/domain dev` dans un second terminal
 pour recompiler en continu.
 
-## Scène actuelle (étapes 2–4)
+## Scène actuelle (étapes 2–5)
 
 La scène charge `engin.glb` (parent `engin`, corps, cabine, quatre roues) et instancie `cone.glb`
 trois fois aux positions du scénario `chantier-1`, sur un sol à grille et une zone d'arrivée.
 
 L'engin se conduit avec **ZQSD**, **WASD** ou les **flèches** (avant, arrière, gauche, droite).
-La caméra de poursuite suit l'engin en douceur. La distance parcourue est affichée dans le HUD ;
-elle est émise par lots de 100 ms sous forme d'événements `MOVED`, prêts pour le futur
-`GameController`. `I` ouvre l'inspecteur Babylon.
+La physique Havok le maintient au sol et gère les collisions : il ne peut pas se renverser, chaque
+cône percuté émet un unique `CONE_HIT` et l'arrivée un unique `REACHED_TARGET`. La caméra de
+poursuite suit l'engin en douceur. La distance parcourue est affichée dans le HUD ; elle est émise
+par lots de 100 ms sous forme d'événements `MOVED`, prêts pour le futur `GameController`. `I` ouvre
+l'inspecteur Babylon.
+
+Le WASM de Havok est copié depuis `node_modules` vers `public/havok/` par
+`apps/web/scripts/copy-havok.mjs` (lancé par `prestart`/`prebuild`, copie non versionnée).
 
 Les assets provisoires sont générés par `blender/build_assets.py` (voir `blender/README.md`). Pour
 les remplacer par de vrais modèles, exporter les GLB par-dessus en respectant les mêmes conventions :
