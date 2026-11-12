@@ -16,12 +16,30 @@ export default tseslint.config(
   ...tseslint.configs.recommended,
   prettier,
   {
-    files: ["blender/**/*.mjs", "apps/web/scripts/**/*.mjs"],
+    files: [
+      "blender/**/*.mjs",
+      "apps/web/scripts/**/*.mjs",
+      "packages/domain/scripts/**/*.mjs",
+      "e2e/mesures/**/*.mjs",
+    ],
     languageOptions: {
       globals: {
         console: "readonly",
         process: "readonly",
         URL: "readonly",
+        fetch: "readonly",
+      },
+    },
+  },
+  {
+    // Fonctions exécutées dans la page par Playwright (page.evaluate, addInitScript).
+    files: ["e2e/mesures/**/*.mjs"],
+    languageOptions: {
+      globals: {
+        window: "readonly",
+        document: "readonly",
+        performance: "readonly",
+        requestAnimationFrame: "readonly",
       },
     },
   },

@@ -2,13 +2,17 @@
   "name": "chantier-proto",
   "version": "0.1.0",
   "private": true,
-  "description": "Prototype « un engin sur un chantier » (Blender -> Babylon.js/Havok -> Angular, domaine partagé, API NestJS)",
+  "description": "Prototype \u00ab un engin sur un chantier \u00bb (Blender -> Babylon.js/Havok -> Angular, domaine partag\u00e9, API NestJS)",
   "type": "module",
   "scripts": {
     "build": "pnpm -r build",
     "dev:web": "pnpm --filter web start",
     "test": "pnpm -r test",
     "typecheck": "pnpm -r typecheck",
+    "decouplage": "pnpm --filter @chantier/domain decouplage",
+    "e2e": "pnpm build && pnpm --filter e2e e2e",
+    "mesures:fps": "pnpm --filter e2e mesures:fps",
+    "mesures:chargement": "pnpm --filter e2e mesures:chargement",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check ."

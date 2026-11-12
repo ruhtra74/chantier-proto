@@ -201,6 +201,8 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
       );
 
       updateChaseCamera(camera, assets.engineRoot, 0, true);
+      // Repère lu par les scripts de mesure (e2e/mesures) : physique et GLB prêts, partie jouable.
+      performance.mark('chantier:scene-prete');
     } catch (error: unknown) {
       if (this.isStale(generation)) return;
       console.error('Échec du chargement de la physique ou des assets', error);

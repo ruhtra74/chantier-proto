@@ -8,14 +8,15 @@ Prototype technique « un engin sur un chantier » : il valide la chaîne Blende
 Babylon.js/Havok → Angular, avec un domaine métier pur partagé entre le navigateur et un futur
 serveur NestJS qui rejoue les sessions. Le document de conception est
 `../simu-3D/prototype_chantier_conception.md` ; le tableau d'avancement par étape se trouve dans
-`README.md` (étapes 0 à 9 terminées ; reste l'étape 10 — qualité, mesures et bilan).
+`README.md` (étapes 0 à 10 faites ; restent à l'équipe la mesure sur une seconde machine, les
+durées réelles et le report dans le rapport). Bilan : `docs/bilan.md`.
 
 **On travaille en français** : échanges, commentaires, documentation, journal, messages d'erreur et
 valeurs du domaine (`"arrivee"`, `"panne_seche"`).
 
 ## Commandes
 
-Workspace pnpm 12 (`apps/*`, `packages/*`), Node 24. À lancer depuis la racine :
+Workspace pnpm 12 (`apps/*`, `packages/*`, `e2e`), Node 24. À lancer depuis la racine :
 
 ```bash
 pnpm install
@@ -32,7 +33,19 @@ pnpm --filter @chantier/domain exec vitest run tests/reducer.test.ts   # un seul
 pnpm --filter @chantier/domain exec vitest run -t "nom du test"        # un seul test par son nom
 pnpm --filter api exec vitest run test/api.test.ts                     # idem côté API
 pnpm --filter api db:migrate              # après modification de prisma/schema.prisma
+
+pnpm decouplage                           # partie sur le domaine seul (scripts/decouplage.mjs)
+pnpm e2e                                  # pnpm build + Playwright (serveur de prod lancé sur :3100)
+pnpm --filter e2e exec playwright test -g "historique"   # un seul test e2e (après pnpm build)
+pnpm mesures:fps [--gpu dedie] [--sans-vsync]            # nécessite le serveur de prod sur :3000
+pnpm mesures:chargement
+pnpm build && pnpm --filter api db:deploy && pnpm --filter api start   # prod : http://localhost:3000
+docker compose up --build                                              # idem en conteneur
 ```
+
+- `pnpm test` ne lance pas Playwright (le script du paquet `e2e` s'appelle `e2e`, pas `test`).
+- Les tests e2e tournent sur la **version compilée** : après une modification du front ou de
+  l'API, refaire `pnpm build` (ce que fait `pnpm e2e`).
 
 - Les scripts `pre*` d'`apps/api` recompilent le domaine et lancent `prisma generate` (client
   généré dans `apps/api/src/generated/`, ignoré par Git) ; `predev` applique aussi les migrations.
@@ -123,6 +136,14 @@ Moteur Babylon/Havok ──EngineEvent──▶ GameController ──reduce()─
   `engine/inspector.ts`).
 - `proxy.conf.json` n'est lu qu'au lancement de `ng serve` : relancer le serveur de développement
   après l'avoir modifié, sinon `/api` répond 404.
+- En production, `apps/api/src/web-app.ts` sert le front : toute route sans extension hors `/api`
+  renvoie `index.html` ; une nouvelle route API doit donc rester sous `/api`.
+- Le mark `performance.mark('chantier:scene-prete')` de `game-canvas.component.ts` est lu par les
+  tests e2e et les mesures : ne pas le supprimer.
+- `mesures:fps` ouvre une fenêtre (vrai GPU). Sous Wayland, Chromium ignore les variables PRIME :
+  le mode `--gpu dedie` passe donc Chromium en X11 (`--ozone-platform=x11`).
+- Ne pas arrêter un serveur avec `pkill -f "<commande>"` depuis le shell de l'outil : le motif
+  correspond aussi au shell lui-même. Arrêter par PID (`ss -ltnp | grep :3000`).
 - Pour vérifier le front dans un navigateur, le Chromium headless du cache Playwright
   (`~/.cache/ms-playwright/chromium_headless_shell-*`) se pilote par CDP ; sur cette machine
   (AppArmor), il exige `--no-sandbox`. Les touches se simulent par `KeyboardEvent` sur `window`.

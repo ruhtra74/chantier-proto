@@ -8,19 +8,22 @@ pur partagé entre le navigateur et un serveur NestJS qui rejoue les sessions.
 
 ## État d'avancement
 
-| Étape | Contenu                                                                    | État    |
-| ----- | -------------------------------------------------------------------------- | ------- |
-| 0     | Préparation du dépôt (pnpm, TypeScript, ESLint, Prettier, journal)         | ✅      |
-| 1     | Paquet `@chantier/domain` (schémas, score, réducteur, rejeu, tests, build) | ✅      |
-| 2     | Assets Blender (`engin.glb`, `cone.glb`, générés par script)               | ✅      |
-| 3     | Application Angular, scène Babylon.js (GLB chargés)                        | ✅      |
-| 4     | Déplacement clavier, caméra de poursuite, distance par lots `MOVED`        | ✅      |
-| 5     | Physique Havok (sol, engin, cônes, collisions, arrivée)                    | ✅      |
-| 6     | Intégration domaine (contrôleur, journal, fin de partie, redémarrage)      | ✅      |
-| 7     | Interface (HUD, démarrage, fin, navigation)                                | ✅      |
-| 8     | API NestJS (scénarios, sessions, vérification par rejeu, Prisma/SQLite)    | ✅      |
-| 9     | Connexion front/back (proxy, envoi, vérification, historique, hors ligne)  | ✅      |
-| 10    | Qualité, mesures et bilan                                                  | à faire |
+| Étape | Contenu                                                                      | État   |
+| ----- | ---------------------------------------------------------------------------- | ------ |
+| 0     | Préparation du dépôt (pnpm, TypeScript, ESLint, Prettier, journal)           | ✅     |
+| 1     | Paquet `@chantier/domain` (schémas, score, réducteur, rejeu, tests, build)   | ✅     |
+| 2     | Assets Blender (`engin.glb`, `cone.glb`, générés par script)                 | ✅     |
+| 3     | Application Angular, scène Babylon.js (GLB chargés)                          | ✅     |
+| 4     | Déplacement clavier, caméra de poursuite, distance par lots `MOVED`          | ✅     |
+| 5     | Physique Havok (sol, engin, cônes, collisions, arrivée)                      | ✅     |
+| 6     | Intégration domaine (contrôleur, journal, fin de partie, redémarrage)        | ✅     |
+| 7     | Interface (HUD, démarrage, fin, navigation)                                  | ✅     |
+| 8     | API NestJS (scénarios, sessions, vérification par rejeu, Prisma/SQLite)      | ✅     |
+| 9     | Connexion front/back (proxy, envoi, vérification, historique, hors ligne)    | ✅     |
+| 10    | Découplage, production, Docker, Playwright, mesures, bilan (`docs/bilan.md`) | ✅ (1) |
+
+(1) Restent à l'équipe : mesure FPS sur une seconde machine, durées réelles dans le journal et le
+bilan, report des conclusions dans le rapport de phase 0.
 
 ## Prérequis
 
@@ -40,7 +43,26 @@ pnpm build            # build de tous les paquets
 
 pnpm --filter web start   # serveur de développement Angular (http://localhost:4200)
 pnpm --filter api dev     # API NestJS en mode watch (http://localhost:3000/api)
+
+pnpm decouplage           # partie jouée sur le domaine seul, sans 3D (critère C4)
+pnpm e2e                  # build + tests Playwright sur la version de production
+pnpm mesures:fps          # FPS sur le vrai GPU (serveur de production lancé, voir e2e/README.md)
+pnpm mesures:chargement   # poids et temps de premier chargement
 ```
+
+## Version de production
+
+```bash
+pnpm build && pnpm --filter api db:deploy && pnpm --filter api start   # http://localhost:3000
+docker compose up --build                                              # idem, base dans un volume
+```
+
+Si la construction de l'image bloque sur des délais dépassés vers `registry.npmjs.org` (réseau du
+conteneur), la lancer sur le réseau de l'hôte puis démarrer normalement :
+`docker build --network host -t chantier-proto-chantier . && docker compose up`.
+
+L'API compilée sert aussi le front compilé (`apps/web/dist/web/browser`, ou `WEB_DIST_DIR`), avec
+compression gzip et cache long des fichiers hashés : un seul processus, un seul port, pas de proxy.
 
 `start` reconstruit automatiquement `@chantier/domain` avant de lancer Angular. Pendant un
 développement actif du domaine, lancer `pnpm --filter @chantier/domain dev` dans un second terminal
@@ -106,6 +128,9 @@ aucun changement de code n'est nécessaire.
 chantier-proto/
 ├─ blender/                 script de génération et conventions des assets
 ├─ docs/journal.md          journal de bord (temps, IA, problèmes, mesures)
+├─ docs/bilan.md            bilan du prototype (critères, mesures, problèmes, apport de l'IA)
+├─ e2e/                     tests Playwright et scripts de mesure (FPS, chargement)
+├─ Dockerfile, docker-compose.yml   image de production (API + front)
 ├─ packages/domain/         règles métier pures, partagées front + back
 └─ apps/
    ├─ web/                  application Angular + Babylon.js

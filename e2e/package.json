@@ -1,0 +1,18 @@
+{
+  "name": "e2e",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Tests de bout en bout (Playwright) et mesures (FPS, chargement) sur la version de production",
+  "type": "module",
+  "scripts": {
+    "e2e": "playwright test",
+    "mesures:fps": "node mesures/fps.mjs",
+    "mesures:chargement": "node mesures/chargement.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.0",
+    "@types/node": "26.6.6",
+    "typescript": "5.9.3"
+  }
+}

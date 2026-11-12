@@ -1,0 +1,12 @@
+# Lance le prototype complet (API + front servi par l'API) : docker compose up --build
+services:
+  chantier:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      - chantier-data:/data
+    restart: unless-stopped
+
+volumes:
+  chantier-data:

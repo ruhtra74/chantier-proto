@@ -21,6 +21,12 @@ pnpm --filter api build && pnpm --filter api start   # dist/main.js
 pnpm --filter api db:migrate            # après une modification de prisma/schema.prisma
 ```
 
+## Production
+
+`pnpm --filter api start` (après `pnpm build` et `db:deploy`) sert aussi le front Angular compilé
+s'il existe (`src/web-app.ts`) : routes du routeur Angular renvoyées vers `index.html`, compression
+gzip, cache d'un an pour les fichiers hashés. Image Docker : `Dockerfile` à la racine du dépôt.
+
 ## Routes (préfixe `/api`)
 
 | Méthode et chemin    | Rôle                                         | Réponse                                                                |

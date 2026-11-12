@@ -2,7 +2,7 @@
   "name": "api",
   "version": "0.0.0",
   "private": true,
-  "description": "API NestJS du prototype : scénarios, sessions et vérification par rejeu",
+  "description": "API NestJS du prototype : sc\u00e9narios, sessions et v\u00e9rification par rejeu",
   "type": "module",
   "scripts": {
     "predev": "pnpm --filter @chantier/domain build && prisma generate && prisma migrate deploy",
@@ -25,6 +25,8 @@
     "@nestjs/platform-express": "12.4.2",
     "@prisma/adapter-better-sqlite3": "7.10.1",
     "@prisma/client": "7.10.1",
+    "compression": "1.8.2",
+    "prisma": "7.10.1",
     "reflect-metadata": "0.2.2",
     "rxjs": "7.8.2",
     "zod": "4.6.7"
@@ -32,10 +34,10 @@
   "devDependencies": {
     "@nestjs/cli": "12.0.12",
     "@nestjs/testing": "12.4.2",
+    "@types/compression": "1.8.1",
     "@types/express": "5.0.6",
     "@types/node": "26.6.6",
     "@types/supertest": "7.2.1",
-    "prisma": "7.10.1",
     "supertest": "7.3.2",
     "typescript": "6.0.3",
     "vitest": "5.1.0"

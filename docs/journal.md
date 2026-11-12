@@ -258,3 +258,44 @@ décisions prises. Ce journal alimente le bilan (étape 10.8) et le rapport de p
   avec l'API coupée, session conservée puis renvoyée au rechargement et à la navigation suivante,
   session falsifiée affichée « non vérifiée », aucune erreur console. Bundle initial de production
   1,94 Mo brut / 439 Ko transféré. `pnpm test` : 46 tests domaine, 16 tests API.
+
+## 2026-11-12 — étape 10 (qualité, mesures et bilan)
+
+- Temps passé : à compléter par l'équipe.
+- Tâches réalisées :
+  - 10.1 : couverture T1–T10 et A1–A6 vérifiée ; tests des schémas de réponse ; anomalies de
+    production corrigées (compression, cache) à la suite des mesures ;
+  - 10.2 : test de découplage `pnpm decouplage` (partie complète et panne sèche dans Node seul) ;
+  - 10.3 / 10.4 : scripts `e2e/mesures/fps.mjs` et `chargement.mjs`, mesures sur le GPU intégré et
+    le GPU dédié du même portable ;
+  - 10.5 : l'API sert le front compilé (un seul processus) ;
+  - 10.6 : `Dockerfile` multi-étapes et `docker-compose.yml` (base SQLite dans un volume) ;
+  - 10.7 : 5 tests Playwright sur la version de production (paquet `e2e`) ;
+  - 10.8 : bilan dans `docs/bilan.md`.
+- Aide de l'IA : scripts de test et de mesure, configuration de production et Docker, diagnostic
+  du choix du GPU sous Linux, rédaction du bilan.
+- Problèmes rencontrés / solutions :
+  - premier chargement en 4G simulée à 7,6 s : le serveur ne compressait rien (5,8 Mo transférés)
+    et faisait revalider chaque fichier ; ajout de `compression` et d'un cache d'un an pour les
+    fichiers hashés d'Angular (dont les noms contiennent minuscules et tirets) → 1,7 Mo, 4,4 s ;
+  - `--gpu dedie` restait sur l'Intel : sous Wayland, Chromium ignore les variables PRIME ; il faut
+    le lancer en X11 (`--ozone-platform=x11`). Tentatives EGL NVIDIA et ANGLE Vulkan sous Wayland :
+    WebGL indisponible ;
+  - un passage sur la RTX 3050 a eu une image de 1 s (sortie de veille du GPU en PRIME
+    « on-demand »), non reproduite ;
+  - `pnpm <script> -- --option` transmet le `--` tel quel : les scripts de mesure l'ignorent ;
+  - le CLI `prisma` est passé en dépendance de production de l'API pour appliquer les migrations
+    au démarrage du conteneur ; premier `docker compose build` en échec (délai de connexion au
+    registre npm) ; une reconstruction est ensuite restée bloquée ~30 min sur des délais dépassés
+    dans le réseau du conteneur, alors que l'hôte accédait au registre : résolue avec
+    `docker build --network host` ; image de 838 Mo, redémarrage du conteneur en ~13 s
+    (migrations) ;
+  - `app-hud` est un élément hôte sans taille : Playwright le voit « caché », le test vise `.hud`.
+- Mesures (portable Intel Core i5-12450H, écran 60 Hz, canevas 1280 × 800) :
+  - Intel UHD intégrée : 59,1 FPS de moyenne à l'arrêt, 55,7 en conduite, 1 % bas 30 / 40,8 ;
+    sans vsync 1 112 / 1 034 FPS ;
+  - RTX 3050 Laptop : 59,3 / 59,4 FPS, 1 % bas 59,5 / 30 ; sans vsync 2 159 / 1 755 FPS ;
+  - GLB : engin 118 Ko (12 Ko compressé), cône 8 Ko ; scène prête en local 1,5 s (cache vide) /
+    1,0 s (cache chaud), en 4G simulée 4,4 s / 1,5 s ;
+  - `pnpm e2e` : 5 tests en ~25 s, stables sur 3 passages ; `pnpm test` : 46 + 16 tests.
+- Reste à faire : mesure sur une seconde machine, temps passés, report dans le rapport de phase 0.

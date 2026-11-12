@@ -1,0 +1,13 @@
+**/node_modules
+**/dist
+**/.angular
+**/coverage
+apps/api/data
+apps/api/src/generated
+apps/web/public/havok
+graphify-out
+.git
+.opencode
+*.log
+.env
+.env.*
