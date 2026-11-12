@@ -1,40 +1,17 @@
 import { BadRequestException, Injectable, NotFoundException } from "@nestjs/common";
-import type { LogEntry, SessionSubmission } from "@chantier/domain";
+import type {
+  LogEntry,
+  SessionCreated,
+  SessionDetail,
+  SessionSubmission,
+  SessionSummary,
+} from "@chantier/domain";
 import { PrismaService } from "../prisma/prisma.service.js";
 import { verifySession } from "./verify-session.js";
 
-export type SessionCreated = {
-  id: string;
-  serverScore: number;
-  verified: boolean;
-  status: string;
-  reason: string | null;
-};
-
-export type SessionSummary = {
-  id: string;
-  createdAt: Date;
-  scenarioId: string;
-  status: string;
-  reason: string | null;
-  score: number;
-  verified: boolean;
-};
-
-export type SessionDetail = {
-  id: string;
-  userId: string;
-  createdAt: Date;
-  scenarioId: string;
-  scenarioVersion: number;
-  status: string;
-  reason: string | null;
-  clientScore: number;
-  serverScore: number;
-  verified: boolean;
-  durationMs: number;
-  events: LogEntry[];
-};
+/** Les contrats de réponse sont ceux du paquet `domain`, que le front valide avec Zod. */
+type Reason = SessionCreated["reason"];
+type Status = SessionCreated["status"];
 
 @Injectable()
 export class SessionsService {
@@ -75,14 +52,26 @@ export class SessionsService {
         verified: true,
       },
     });
-    return sessions.map(({ serverScore, ...rest }) => ({ ...rest, score: serverScore }));
+    return sessions.map(({ serverScore, createdAt, status, reason, ...rest }) => ({
+      ...rest,
+      createdAt: createdAt.toISOString(),
+      status: status as Status,
+      reason: reason as Reason,
+      score: serverScore,
+    }));
   }
 
   async findOne(id: string): Promise<SessionDetail> {
     const session = await this.prisma.session.findUnique({ where: { id } });
     if (!session) throw new NotFoundException(`Session inconnue : ${id}`);
 
-    const { eventsJson, ...rest } = session;
-    return { ...rest, events: JSON.parse(eventsJson) as LogEntry[] };
+    const { eventsJson, createdAt, status, reason, ...rest } = session;
+    return {
+      ...rest,
+      createdAt: createdAt.toISOString(),
+      status: status as Status,
+      reason: reason as Reason,
+      events: JSON.parse(eventsJson) as LogEntry[],
+    };
   }
 }

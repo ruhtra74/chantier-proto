@@ -106,3 +106,44 @@ export const sessionSubmissionSchema = z.object({
   }),
   durationMs: z.number().int().nonnegative(),
 });
+
+// Réponses de l'API (préfixe /api), validées par le front.
+const gameReasonSchema = z.enum(["arrivee", "panne_seche"]);
+
+/** Réponse de `POST /api/sessions` : issue recalculée par le serveur. */
+export const sessionCreatedSchema = z.object({
+  id: z.string().min(1),
+  serverScore: z.number().int().nonnegative(),
+  verified: z.boolean(),
+  status: z.enum(["running", "finished"]),
+  reason: gameReasonSchema.nullable(),
+});
+
+/** Élément de `GET /api/sessions`. `score` est le score du serveur. */
+export const sessionSummarySchema = z.object({
+  id: z.string().min(1),
+  createdAt: z.iso.datetime(),
+  scenarioId: z.string().min(1),
+  status: z.enum(["running", "finished"]),
+  reason: gameReasonSchema.nullable(),
+  score: z.number().int().nonnegative(),
+  verified: z.boolean(),
+});
+
+export const sessionListSchema = z.array(sessionSummarySchema);
+
+/** Réponse de `GET /api/sessions/:id`, journal d'événements compris. */
+export const sessionDetailSchema = z.object({
+  id: z.string().min(1),
+  userId: z.string(),
+  createdAt: z.iso.datetime(),
+  scenarioId: z.string().min(1),
+  scenarioVersion: z.number().int().positive(),
+  status: z.enum(["running", "finished"]),
+  reason: gameReasonSchema.nullable(),
+  clientScore: z.number().int().nonnegative(),
+  serverScore: z.number().int().nonnegative(),
+  verified: z.boolean(),
+  durationMs: z.number().int().nonnegative(),
+  events: z.array(logEntrySchema),
+});

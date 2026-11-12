@@ -8,7 +8,7 @@ Prototype technique « un engin sur un chantier » : il valide la chaîne Blende
 Babylon.js/Havok → Angular, avec un domaine métier pur partagé entre le navigateur et un futur
 serveur NestJS qui rejoue les sessions. Le document de conception est
 `../simu-3D/prototype_chantier_conception.md` ; le tableau d'avancement par étape se trouve dans
-`README.md` (étapes 0 à 8 terminées ; 9 et 10 — connexion front/back, mesures et bilan — à faire).
+`README.md` (étapes 0 à 9 terminées ; reste l'étape 10 — qualité, mesures et bilan).
 
 **On travaille en français** : échanges, commentaires, documentation, journal, messages d'erreur et
 valeurs du domaine (`"arrivee"`, `"panne_seche"`).
@@ -100,8 +100,16 @@ Moteur Babylon/Havok ──EngineEvent──▶ GameController ──reduce()─
   `verified = false` ; corps invalide, scénario inconnu ou cône inconnu → 400. Les corps sont validés
   par `ZodValidationPipe` avec les schémas du domaine (pas de class-validator). `app.setup.ts`
   (préfixe `/api`, limite JSON 1 Mo) est partagé entre `main.ts` et les tests.
+- **`apps/web/src/app/api/`** — accès à l'API : `ApiService` (chemins relatifs `/api`, proxy de
+  développement `proxy.conf.json` vers le port 3000 ; réponses validées par les schémas Zod du
+  domaine, erreurs `ApiError` : `unreachable` = réseau/délai/5xx, à réessayer ; `rejected` = 4xx,
+  abandon), `ScenarioService` (scénario de l'API, copie du domaine en secours) et
+  `SessionSyncService` (chaque session est d'abord écrite dans `localStorage`, puis envoyée ;
+  nouvel essai au démarrage via `provideAppInitializer`, à chaque `NavigationEnd` et sur
+  `online`). Les contrats de réponse (`sessionCreatedSchema`, etc.) vivent dans le domaine et
+  typent aussi l'API.
 - Routes du front : `/` accueil, `/jeu` partie, `/fin` écran de fin (avec un message de repli sans partie
-  mémorisée). Application Angular 22 zoneless, composants standalone à entrées `signal`.
+  mémorisée), `/historique`. Application Angular 22 zoneless, composants standalone à entrées `signal`.
 
 ## Pièges connus (tirés de `docs/journal.md`)
 
@@ -113,6 +121,11 @@ Moteur Babylon/Havok ──EngineEvent──▶ GameController ──reduce()─
   cloner le nœud `cone` complet, pas `meshes[0]`.
 - L'inspecteur Babylon exige ses imports d'effets de bord ES6 avant son propre import (voir
   `engine/inspector.ts`).
+- `proxy.conf.json` n'est lu qu'au lancement de `ng serve` : relancer le serveur de développement
+  après l'avoir modifié, sinon `/api` répond 404.
+- Pour vérifier le front dans un navigateur, le Chromium headless du cache Playwright
+  (`~/.cache/ms-playwright/chromium_headless_shell-*`) se pilote par CDP ; sur cette machine
+  (AppArmor), il exige `--no-sandbox`. Les touches se simulent par `KeyboardEvent` sur `window`.
 - Des parois statiques invisibles bordent le sol de 60 × 60 m pour que les cônes percutés ne
   tombent pas indéfiniment.
 

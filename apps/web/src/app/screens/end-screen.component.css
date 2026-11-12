@@ -82,6 +82,27 @@ h1.lose {
   line-height: 1;
 }
 
+.sync {
+  margin: -10px 0 22px;
+  font-size: 14px;
+}
+
+.sync.ok {
+  color: #4ade80;
+}
+
+.sync.warn {
+  color: #fbbf24;
+}
+
+.sync.error {
+  color: #f87171;
+}
+
+.sync.muted {
+  color: #94a3b8;
+}
+
 .stats {
   display: grid;
   gap: 12px;

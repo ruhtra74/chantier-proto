@@ -19,7 +19,8 @@ pur partagé entre le navigateur et un serveur NestJS qui rejoue les sessions.
 | 6     | Intégration domaine (contrôleur, journal, fin de partie, redémarrage)      | ✅      |
 | 7     | Interface (HUD, démarrage, fin, navigation)                                | ✅      |
 | 8     | API NestJS (scénarios, sessions, vérification par rejeu, Prisma/SQLite)    | ✅      |
-| 9–10  | Connexion front/back, mesures et bilan                                     | à faire |
+| 9     | Connexion front/back (proxy, envoi, vérification, historique, hors ligne)  | ✅      |
+| 10    | Qualité, mesures et bilan                                                  | à faire |
 
 ## Prérequis
 
@@ -60,6 +61,19 @@ graphify export html                  # graphify-out/graph.html
 Le rapport navigable est `graphify-out/GRAPH_REPORT.md` ; il couvre le code, les documents et le
 journal. Les artefacts sont générés et ignorés par Git : relancer `graphify update .` après des
 changements de code.
+
+## Connexion à l'API (étape 9)
+
+Lancer l'API (`pnpm --filter api dev`) puis le front (`pnpm --filter web start`) : le serveur de
+développement Angular relaie `/api` vers http://localhost:3000 (`apps/web/proxy.conf.json`).
+
+- le scénario est demandé à l'API, avec la copie du paquet `domain` comme secours ;
+- en fin de partie, la session est envoyée à l'API, qui la rejoue ; l'écran de fin affiche
+  « Score vérifié par le serveur » ou l'écart constaté ;
+- la page **Historique** (`/historique`) liste les parties enregistrées et permet de rejouer un
+  journal dans le navigateur, sans 3D, pour comparer au score du serveur ;
+- sans API, la partie se termine normalement : la session est conservée dans `localStorage` et
+  renvoyée au prochain chargement, à chaque navigation et au retour du réseau.
 
 ## Version jouable (étapes 2–7)
 

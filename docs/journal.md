@@ -227,3 +227,34 @@ décisions prises. Ce journal alimente le bilan (étape 10.8) et le rapport de p
 - Mesures : `pnpm --filter api test` → 16 tests réussis en 4,3 s (dont la base recréée) ; session
   honnête vérifiée (score 1235), score falsifié enregistré avec `verified = false` ; démarrage à
   froid (`pnpm --filter api dev` sans base) validé.
+
+## 2026-11-12 — étape 9 (connexion front ↔ back)
+
+- Temps passé : à compléter par l'équipe.
+- Tâches réalisées : proxy de développement Angular vers l'API (`proxy.conf.json`), `ApiService`
+  (`HttpClient`, délai de 4 s, réponses validées par Zod, erreurs typées), schémas des réponses de
+  l'API ajoutés au paquet `domain` et réutilisés par le serveur, scénario chargé depuis l'API avec
+  la copie locale en secours, envoi de la session en fin de partie, statut de vérification sur
+  l'écran de fin, page Historique (`/historique`), file d'envoi persistante dans `localStorage` et
+  rejeu local d'un journal sans 3D depuis l'historique (tâche optionnelle 9.8).
+- Aide de l'IA : conception des services, écriture des écrans, test de bout en bout piloté par le
+  protocole DevTools (Chromium headless) et captures d'écran de contrôle.
+- Problèmes rencontrés / solutions :
+  - les réponses de l'API n'avaient pas de contrat partagé : les schémas `sessionCreatedSchema`,
+    `sessionSummarySchema` et `sessionDetailSchema` ont rejoint le paquet `domain`, et l'API renvoie
+    désormais ses dates en ISO pour les respecter ;
+  - pour ne jamais perdre une partie, la session est écrite dans `localStorage` **avant** l'envoi,
+    puis retirée une fois acceptée (201) ou refusée (400, inutile de réessayer). Les erreurs réseau,
+    délais dépassés et 5xx (le proxy répond 5xx quand l'API est arrêtée) laissent la session en
+    file ;
+  - l'accueil affichait brièvement « Serveur injoignable » avant la réponse de l'API : le message
+    n'apparaît qu'une fois la réponse (ou l'échec) connue ;
+  - limites connues : une session dont la réponse 201 se perd sera renvoyée et enregistrée deux
+    fois (pas d'identifiant d'idempotence) ; deux onglets ouverts partagent la même file ;
+  - Chromium headless refusait de démarrer (bac à sable bloqué par AppArmor) : lancé avec
+    `--no-sandbox` pour les tests locaux.
+- Mesures : test de bout en bout 16/16 — scénario fourni par le serveur, partie vérifiée (score
+  1230, identique en base), historique et rejeu local (27 événements, même score), accueil et partie
+  avec l'API coupée, session conservée puis renvoyée au rechargement et à la navigation suivante,
+  session falsifiée affichée « non vérifiée », aucune erreur console. Bundle initial de production
+  1,94 Mo brut / 439 Ko transféré. `pnpm test` : 46 tests domaine, 16 tests API.

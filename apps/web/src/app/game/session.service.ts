@@ -3,8 +3,8 @@ import type { GameResult, SessionSubmission } from '@chantier/domain';
 
 /**
  * Issue d'une partie terminée, transmise à l'écran de fin par le routeur.
- * `submission` contient déjà le journal et l'état final : l'écran de fin n'a rien à recalculer,
- * et l'API de l'étape 8 pourra l'envoyer telle quelle.
+ * `submission` contient le journal et l'état final, envoyés tels quels à l'API ; `syncId` permet à
+ * l'écran de fin de suivre cet envoi dans `SessionSyncService`.
  */
 export type GameOutcome = {
   result: GameResult;
@@ -13,6 +13,7 @@ export type GameOutcome = {
   conesHit: number;
   durationMs: number;
   submission: SessionSubmission;
+  syncId: string;
 };
 
 /**

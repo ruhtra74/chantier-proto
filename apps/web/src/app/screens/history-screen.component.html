@@ -1,0 +1,64 @@
+<main class="screen">
+  <section class="card">
+    <p class="eyebrow">Parties enregistrées</p>
+    <h1>Historique</h1>
+
+    @if (pendingCount() > 0) {
+      <p class="notice warn" role="status">
+        {{ pendingCount() }} partie(s) en attente d'envoi sur cet appareil.
+        <button type="button" class="link" (click)="refresh()">Réessayer</button>
+      </p>
+    }
+
+    @if (list().state === 'loading') {
+      <p class="notice muted">Chargement…</p>
+    } @else if (listError(); as message) {
+      <p class="notice error">
+        Historique indisponible : {{ message }}
+        <button type="button" class="link" (click)="refresh()">Réessayer</button>
+      </p>
+    } @else if (sessions().length === 0) {
+      <p class="notice muted">Aucune partie enregistrée pour l'instant.</p>
+    } @else {
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th scope="col">Date</th>
+              <th scope="col">Issue</th>
+              <th scope="col" class="num">Score</th>
+              <th scope="col">Vérifiée</th>
+              <th scope="col">Rejeu local</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (session of sessions(); track session.id) {
+              <tr>
+                <td>{{ formatDate(session.createdAt) }}</td>
+                <td>{{ reasonLabel(session) }}</td>
+                <td class="num">{{ session.score }}</td>
+                <td [class]="session.verified ? 'ok' : 'warn'">
+                  {{ session.verified ? '✓ oui' : '⚠ non' }}
+                </td>
+                <td>
+                  @if (replayLabel(session.id); as replayed) {
+                    <span [class]="replayed.tone">{{ replayed.text }}</span>
+                  } @else {
+                    <button type="button" class="link" (click)="replayLocally(session.id)">
+                      Rejouer
+                    </button>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+
+    <div class="actions">
+      <a class="primary" routerLink="/jeu">Jouer</a>
+      <a class="secondary" routerLink="/">Accueil</a>
+    </div>
+  </section>
+</main>

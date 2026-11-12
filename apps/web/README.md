@@ -39,6 +39,9 @@ Ouvrir http://localhost:4200. Le script `prestart` recompile `@chantier/domain` 
 - `GameSessionService` : issue de la partie (résultat, statistiques, `SessionSubmission`)
   conservée entre le composant de jeu et l'écran de fin ;
 - fin de partie : arrêt de l'engin, publication de l'issue puis navigation vers `/fin` ;
+- étape 9 : scénario chargé depuis l'API (copie locale de secours), session envoyée en fin de
+  partie et statut de vérification sur l'écran de fin, page `/historique` avec rejeu local, file
+  d'envoi persistante (`localStorage`) quand l'API est injoignable ;
 - `R` relance une partie, `Échap` revient à l'accueil, `I` ouvre l'inspecteur Babylon (module et
   effets de bord `debugLayer`/`Ray` chargés à la demande).
 
@@ -55,11 +58,17 @@ Le WASM de Havok est copié dans `public/havok/` par `scripts/copy-havok.mjs`, l
 ```
 src/app/
 ├─ app.component.*          coquille + router-outlet
-├─ app.config.ts            configuration Angular
-├─ app.routes.ts            routes : accueil, jeu, fin
+├─ app.config.ts            configuration Angular (HttpClient, renvoi des sessions au démarrage)
+├─ app.routes.ts            routes : accueil, jeu, fin, historique
+├─ api/
+│  ├─ api.service.ts           HttpClient + validation Zod des réponses, erreurs typées
+│  ├─ scenario.service.ts      scénario de l'API, copie du domaine en secours
+│  ├─ session-sync.service.ts  envoi des sessions, statut, nouvel essai
+│  └─ pending-store.ts         sessions non envoyées dans localStorage
 ├─ screens/
 │  ├─ start-screen.component.*  consignes, commandes et barème
-│  └─ end-screen.component.*    raison, score et statistiques
+│  ├─ end-screen.component.*    raison, score, statistiques et vérification serveur
+│  └─ history-screen.component.*  parties enregistrées, rejeu local sans 3D
 └─ game/
    ├─ game-canvas.component.*   crée, redémarre et détruit le moteur Babylon
    ├─ hud.component.*           HUD (FPS, carburant, distance, cônes)

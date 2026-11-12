@@ -11,11 +11,11 @@
       <article>
         <h2>Objectif</h2>
         <ul>
-          <li>Atteindre le disque d'arrivée à {{ target?.x }}, {{ target?.z }} m.</li>
-          <li>Éviter les {{ coneCount }} cônes posés sur le trajet.</li>
+          <li>Atteindre le disque d'arrivée à {{ target()?.x }}, {{ target()?.z }} m.</li>
+          <li>Éviter les {{ coneCount() }} cônes posés sur le trajet.</li>
           <li>
-            Gérer les {{ fuelCapacity }} unités de carburant ({{
-              consumptionPerMeter.toFixed(1).replace('.', ',')
+            Gérer les {{ fuelCapacity() }} unités de carburant ({{
+              consumptionPerMeter().toFixed(1).replace('.', ',')
             }}
             par mètre parcouru).
           </li>
@@ -38,18 +38,30 @@
       <article class="score-rules">
         <h2>Score</h2>
         <p>
-          <strong>{{ scoring?.base ?? 0 }}</strong> points de base
+          <strong>{{ scoring()?.base ?? 0 }}</strong> points de base
         </p>
         <p>
-          <strong>− {{ scoring?.penaltyPerConeHit ?? 0 }}</strong> par cône touché
+          <strong>− {{ scoring()?.penaltyPerConeHit ?? 0 }}</strong> par cône touché
         </p>
         <p>
-          <strong>+ {{ scoring?.bonusPerFuelUnit ?? 0 }}</strong> par unité de carburant restante
+          <strong>+ {{ scoring()?.bonusPerFuelUnit ?? 0 }}</strong> par unité de carburant restante
         </p>
       </article>
     </div>
 
     <a class="primary" routerLink="/jeu">Démarrer la partie</a>
-    <p class="note">La partie se joue au clavier, en plein écran.</p>
+    <p class="note">
+      La partie se joue au clavier, en plein écran ·
+      <a routerLink="/historique">Historique des parties</a>
+    </p>
+    @if (checked()) {
+      <p class="note">
+        {{
+          source() === 'api'
+            ? 'Scénario fourni par le serveur.'
+            : 'Serveur injoignable : scénario local, les parties seront envoyées plus tard.'
+        }}
+      </p>
+    }
   </section>
 </main>

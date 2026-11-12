@@ -30,6 +30,9 @@ pnpm --filter api db:migrate            # après une modification de prisma/sche
 | `GET /sessions`      | Liste, la plus récente d'abord               | 200 `[{ id, createdAt, scenarioId, status, reason, score, verified }]` |
 | `GET /sessions/:id`  | Détail, journal d'événements compris         | 200, 404                                                               |
 
+Les formes des réponses sont définies dans le paquet `domain` (`sessionCreatedSchema`,
+`sessionSummarySchema`, `sessionDetailSchema`) : le front les valide avec ces mêmes schémas.
+
 ## Vérification par rejeu
 
 `src/sessions/verify-session.ts` rejoue `events` avec `replay()` du domaine, puis compare au

@@ -5,16 +5,16 @@ par l'API NestJS (étape 8), ce qui garantit un score identique des deux côtés
 
 ## Contenu
 
-| Fichier                     | Rôle                                                                          |
-| --------------------------- | ----------------------------------------------------------------------------- |
-| `src/schemas.ts`            | Schémas Zod : scénario, événements, commandes, journal, soumission de session |
-| `src/types.ts`              | Types TypeScript déduits des schémas                                          |
-| `src/state.ts`              | `createInitialState(scenario)`                                                |
-| `src/score.ts`              | `computeScore(scenario, cônesTouchés, carburantRestant)`                      |
-| `src/reducer.ts`            | `reduce(état, événement, scénario)` → `{ state, commands }`                   |
-| `src/replay.ts`             | `replay(scenario, journal)` et `replayEvents(scenario, événements)`           |
-| `src/scenarios.ts`          | Scénario `chantier-1` validé au chargement et registre                        |
-| `scenarios/chantier-1.json` | Scénario de référence                                                         |
+| Fichier                     | Rôle                                                                                    |
+| --------------------------- | --------------------------------------------------------------------------------------- |
+| `src/schemas.ts`            | Schémas Zod : scénario, événements, commandes, journal, soumission et réponses de l'API |
+| `src/types.ts`              | Types TypeScript déduits des schémas                                                    |
+| `src/state.ts`              | `createInitialState(scenario)`                                                          |
+| `src/score.ts`              | `computeScore(scenario, cônesTouchés, carburantRestant)`                                |
+| `src/reducer.ts`            | `reduce(état, événement, scénario)` → `{ state, commands }`                             |
+| `src/replay.ts`             | `replay(scenario, journal)` et `replayEvents(scenario, événements)`                     |
+| `src/scenarios.ts`          | Scénario `chantier-1` validé au chargement et registre                                  |
+| `scenarios/chantier-1.json` | Scénario de référence                                                                   |
 
 ## Contrats
 

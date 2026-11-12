@@ -1,0 +1,144 @@
+:host {
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+}
+
+.screen {
+  box-sizing: border-box;
+  min-height: 100%;
+  display: grid;
+  place-items: center;
+  padding: 32px 20px;
+  background:
+    radial-gradient(circle at 20% 10%, rgb(251 191 36 / 12%), transparent 55%),
+    radial-gradient(circle at 85% 90%, rgb(56 189 248 / 10%), transparent 50%), #0f172a;
+  color: #e2e8f0;
+  font:
+    16px/1.6 system-ui,
+    sans-serif;
+}
+
+.card {
+  width: min(760px, 100%);
+  padding: 36px 32px 32px;
+  border: 1px solid rgb(255 255 255 / 12%);
+  border-radius: 18px;
+  background: rgb(15 23 42 / 82%);
+  box-shadow: 0 24px 60px rgb(0 0 0 / 45%);
+  text-align: center;
+}
+
+.eyebrow {
+  margin: 0 0 6px;
+  color: #fbbf24;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+}
+
+h1 {
+  margin: 0 0 20px;
+  font-size: clamp(28px, 4vw, 40px);
+  line-height: 1.1;
+}
+
+.notice {
+  margin: 0 0 20px;
+  font-size: 14px;
+}
+
+.table-wrap {
+  margin: 0 0 28px;
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  text-align: left;
+}
+
+th {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgb(255 255 255 / 20%);
+  color: #94a3b8;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+td {
+  padding: 8px 10px;
+  border-bottom: 1px solid rgb(255 255 255 / 8%);
+  white-space: nowrap;
+}
+
+.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.ok {
+  color: #4ade80;
+}
+
+.warn {
+  color: #fbbf24;
+}
+
+.error {
+  color: #f87171;
+}
+
+.muted {
+  color: #94a3b8;
+}
+
+.link {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: #38bdf8;
+  font: inherit;
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+}
+
+.primary,
+.secondary {
+  padding: 12px 26px;
+  border-radius: 999px;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.primary {
+  background: #fbbf24;
+  color: #1c1917;
+}
+
+.primary:hover,
+.primary:focus-visible {
+  background: #fcd34d;
+}
+
+.secondary {
+  border: 1px solid rgb(255 255 255 / 25%);
+  color: #e2e8f0;
+}
+
+.secondary:hover,
+.secondary:focus-visible {
+  background: rgb(255 255 255 / 10%);
+}

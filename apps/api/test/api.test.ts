@@ -1,7 +1,12 @@
 import "reflect-metadata";
 import { Test } from "@nestjs/testing";
 import type { NestExpressApplication } from "@nestjs/platform-express";
-import { chantier1 } from "@chantier/domain";
+import {
+  chantier1,
+  sessionCreatedSchema,
+  sessionDetailSchema,
+  sessionListSchema,
+} from "@chantier/domain";
 import request from "supertest";
 import type { App } from "supertest/types.js";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
@@ -50,7 +55,7 @@ describe("API (section 10.2)", () => {
       status: "finished",
       reason: "arrivee",
     });
-    expect(response.body.id).toEqual(expect.any(String));
+    expect(sessionCreatedSchema.safeParse(response.body).success).toBe(true);
     verifiedId = response.body.id;
   });
 
@@ -92,6 +97,7 @@ describe("API (section 10.2)", () => {
     const response = await request(server).get("/api/sessions").expect(200);
 
     expect(response.body).toHaveLength(2);
+    expect(sessionListSchema.safeParse(response.body).success).toBe(true);
     expect(response.body).toEqual(
       expect.arrayContaining([
         expect.objectContaining({
@@ -107,6 +113,7 @@ describe("API (section 10.2)", () => {
 
   it("A6 — GET /api/sessions/:id retourne le journal ; identifiant inconnu : 404", async () => {
     const response = await request(server).get(`/api/sessions/${verifiedId}`).expect(200);
+    expect(sessionDetailSchema.safeParse(response.body).success).toBe(true);
 
     expect(response.body).toMatchObject({
       id: verifiedId,

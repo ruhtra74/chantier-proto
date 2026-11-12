@@ -18,6 +18,10 @@
         <span class="score-value">{{ result.result.score }}</span>
       </p>
 
+      @if (syncMessage(); as sync) {
+        <p class="sync" [class]="sync.tone" role="status">{{ sync.text }}</p>
+      }
+
       <dl class="stats">
         <div>
           <dt>Distance</dt>
@@ -46,6 +50,7 @@
       <a class="primary" routerLink="/jeu">
         {{ outcome() ? 'Rejouer' : 'Jouer' }}
       </a>
+      <a class="secondary" routerLink="/historique">Historique</a>
       <a class="secondary" routerLink="/">Accueil</a>
     </div>
   </section>

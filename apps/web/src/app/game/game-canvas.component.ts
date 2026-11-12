@@ -9,9 +9,10 @@ import {
   viewChild,
 } from '@angular/core';
 import { Router } from '@angular/router';
-import { getScenario } from '@chantier/domain';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import type { Scene } from '@babylonjs/core/scene';
+import { ScenarioService } from '../api/scenario.service';
+import { SessionSyncService } from '../api/session-sync.service';
 import { updateChaseCamera } from './engine/camera';
 import { createScene } from './engine/create-scene';
 import { KeyboardInput } from './engine/input';
@@ -40,7 +41,8 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
   private readonly zone = inject(NgZone);
   private readonly router = inject(Router);
   private readonly session = inject(GameSessionService);
-  private readonly scenario = getScenario('chantier-1');
+  private readonly scenarios = inject(ScenarioService);
+  private readonly sync = inject(SessionSyncService);
 
   readonly fps = signal(0);
   readonly fuel = signal(0);
@@ -86,15 +88,19 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
   }
 
   private async startGame(): Promise<void> {
-    const scenario = this.scenario;
-    if (!scenario) {
-      this.error.set('Scénario « chantier-1 » introuvable dans le paquet domain.');
-      return;
-    }
-
     const generation = ++this.generation;
     this.ended = false;
     this.error.set(null);
+
+    // Scénario servi par l'API, ou copie locale du paquet domain si le serveur est injoignable.
+    const loaded = await this.scenarios.load();
+    if (this.isStale(generation)) return;
+    if (!loaded) {
+      this.error.set('Scénario « chantier-1 » introuvable (API et copie locale).');
+      return;
+    }
+    const { scenario } = loaded;
+
     this.fuel.set(scenario.fuel.capacity);
     this.distance.set(0);
     this.conesHit.set(0);
@@ -166,13 +172,16 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
           this.vehicle?.disable();
 
           const state = controller.currentState;
+          const submission = controller.submission();
           this.session.publish({
             result,
             fuel: state.fuel,
             distance: state.distance,
             conesHit: state.conesHit.length,
             durationMs: controller.durationMs,
-            submission: controller.submission(),
+            submission,
+            // Envoi au serveur (rejeu et vérification), conservé localement en cas d'échec.
+            syncId: this.sync.submit(submission),
           });
 
           void this.router.navigate(['/fin']);

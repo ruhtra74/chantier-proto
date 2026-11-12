@@ -1,12 +1,13 @@
 import { Body, Controller, Get, HttpCode, HttpStatus, Param, Post } from "@nestjs/common";
-import { sessionSubmissionSchema, type SessionSubmission } from "@chantier/domain";
-import { ZodValidationPipe } from "../common/zod-validation.pipe.js";
 import {
-  SessionsService,
+  sessionSubmissionSchema,
   type SessionCreated,
   type SessionDetail,
+  type SessionSubmission,
   type SessionSummary,
-} from "./sessions.service.js";
+} from "@chantier/domain";
+import { ZodValidationPipe } from "../common/zod-validation.pipe.js";
+import { SessionsService } from "./sessions.service.js";
 
 @Controller("sessions")
 export class SessionsController {
