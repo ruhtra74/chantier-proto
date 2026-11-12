@@ -152,3 +152,33 @@ décisions prises. Ce journal alimente le bilan (étape 10.8) et le rapport de p
   redémarrage par `R` : état neuf (carburant 100, distance 0, journal vide) et 3,6 m parcourus
   aussitôt après ; panne sèche simulée par un `MOVED` de 200 m : carburant 0, `END` « panne_seche »,
   score 0, événements suivants ignorés ; aucune erreur console.
+
+## 2026-11-12 — étape 7 (interface)
+
+- Temps passé : à compléter par l'équipe.
+- Tâches réalisées : HUD extrait dans un composant `app-hud` (FPS, carburant, distance, cônes,
+  rappel des touches), alimenté par les `UPDATE_HUD` du domaine au rythme des `MOVED` (10 Hz au
+  plus) ; écran de démarrage (objectif, commandes, barème lus depuis le scénario) ; écran de fin
+  (raison, score, distance, cônes, carburant, durée, actions Rejouer/Accueil) ; `GameSessionService`
+  à la racine pour transmettre l'issue et le `SessionSubmission` au-delà de la destruction du
+  composant de jeu ; routes `/`, `/jeu`, `/fin` et redirection `**` ; sur `END`, arrêt de l'engin,
+  publication de l'issue puis navigation vers `/fin` ; `Échap` renvoie à l'accueil.
+- Aide de l'IA : extraction du HUD et des styles, création des écrans et du service de session,
+  branchement du routeur, garde anti-double navigation sur `END`, test fonctionnel CDP couvrant
+  accès direct à `/fin`, accueil, partie, arrivée, Rejouer, Échap, panne sèche et retour accueil.
+- Problèmes rencontrés / solutions :
+  - le HUD était imbriqué dans le composant de jeu : il est désormais un composant à entrées
+    `signal`, ce qui isole sa mise en forme et ses styles du cycle de vie du moteur ;
+  - l'issue de la partie devait survivre à la destruction du composant de jeu lors de la
+    navigation : un service fourni à la racine la conserve pour l'écran de fin ;
+  - `END` peut être suivi d'un `flushMoved` : une garde `ended` empêche toute double navigation,
+    et les événements tardifs restent ignorés par le contrôleur déjà terminé ;
+  - l'écran de fin doit rester utilisable en accès direct (URL saisie ou rechargement) : il affiche
+    un message de repli et un bouton **Jouer** quand aucune issue n'est mémorisée ;
+  - `body { overflow: hidden }` empêchait le défilement des écrans sur petite hauteur : les écrans
+    gèrent eux-mêmes leur défilement vertical.
+- Mesures : arrivée en 3,8 s à 23,0 m, 1 cône touché, carburant 65,5, score 1225, 29 entrées de
+  journal ; écran de fin conforme (score, quatre statistiques, actions) ; Rejouer repart d'un état
+  neuf (carburant 100, distance 0, journal vide) ; `Échap` puis retour accueil validés ; panne
+  sèche simulée : score 0 et écran « Panne sèche » ; accès direct à `/fin` sans partie : message de
+  repli ; aucune erreur console.

@@ -1,0 +1,12 @@
+<div class="hud">
+  <span class="badge">FPS {{ fps() }}</span>
+  <span class="badge">Carburant {{ fuel().toFixed(0) }}</span>
+  <span class="badge">Distance {{ distance().toFixed(1).replace('.', ',') }} m</span>
+  <span class="badge">Cônes {{ conesHit() }}</span>
+  @if (placeholderAssets()) {
+    <span class="badge badge-warn">Primitives (GLB à venir)</span>
+  }
+  <span class="hint"
+    >ZQSD / WASD / Flèches : conduire · R : recommencer · Échap : accueil · I : inspecteur</span
+  >
+</div>

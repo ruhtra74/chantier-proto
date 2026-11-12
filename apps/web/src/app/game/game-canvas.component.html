@@ -1,22 +1,12 @@
 <canvas #canvas class="game-canvas" tabindex="0"></canvas>
 
-<div class="hud">
-  <span class="badge">FPS {{ fps() }}</span>
-  <span class="badge">Carburant {{ fuel().toFixed(0) }}</span>
-  <span class="badge">Distance {{ distance().toFixed(1).replace('.', ',') }} m</span>
-  <span class="badge">Cônes {{ conesHit() }}</span>
-  @if (result(); as outcome) {
-    @if (outcome.reason === 'arrivee') {
-      <span class="badge badge-ok">Arrivée · score {{ outcome.score }}</span>
-    } @else {
-      <span class="badge badge-warn">Panne sèche · score {{ outcome.score }}</span>
-    }
-  }
-  @if (placeholderAssets) {
-    <span class="badge badge-warn">Primitives (GLB à venir)</span>
-  }
-  <span class="hint">ZQSD / WASD / Flèches : conduire · R : recommencer · I : inspecteur</span>
-</div>
+<app-hud
+  [fps]="fps()"
+  [fuel]="fuel()"
+  [distance]="distance()"
+  [conesHit]="conesHit()"
+  [placeholderAssets]="placeholderAssets"
+/>
 
 @if (error(); as message) {
   <p class="error">{{ message }}</p>

@@ -8,7 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
-import type { GameResult } from '@chantier/domain';
+import { Router } from '@angular/router';
 import { getScenario } from '@chantier/domain';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import type { Scene } from '@babylonjs/core/scene';
@@ -26,22 +26,26 @@ import {
 } from './engine/physics';
 import { VehicleController } from './engine/vehicle';
 import { GameController, type HudSnapshot } from './game-controller';
+import { HudComponent } from './hud.component';
+import { GameSessionService } from './session.service';
 
 @Component({
   selector: 'app-game-canvas',
+  imports: [HudComponent],
   templateUrl: './game-canvas.component.html',
   styleUrl: './game-canvas.component.css',
 })
 export class GameCanvasComponent implements AfterViewInit, OnDestroy {
   private readonly canvasRef = viewChild.required<ElementRef<HTMLCanvasElement>>('canvas');
   private readonly zone = inject(NgZone);
+  private readonly router = inject(Router);
+  private readonly session = inject(GameSessionService);
   private readonly scenario = getScenario('chantier-1');
 
   readonly fps = signal(0);
   readonly fuel = signal(0);
   readonly distance = signal(0);
   readonly conesHit = signal(0);
-  readonly result = signal<GameResult | null>(null);
   readonly error = signal<string | null>(null);
   readonly placeholderAssets = !USE_GLB_ASSETS;
 
@@ -53,6 +57,8 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
   private controller?: GameController;
   private fpsTimer?: number;
   private destroyed = false;
+  /** Empêche une double navigation vers l'écran de fin. */
+  private ended = false;
   /** Incrémenté à chaque démarrage : invalide les chargements asynchrones périmés. */
   private generation = 0;
 
@@ -87,11 +93,12 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
     }
 
     const generation = ++this.generation;
+    this.ended = false;
     this.error.set(null);
-    this.result.set(null);
     this.fuel.set(scenario.fuel.capacity);
     this.distance.set(0);
     this.conesHit.set(0);
+    this.session.clear();
 
     const canvas = this.canvasRef().nativeElement;
     const engine = new Engine(canvas, true, { stencil: true }, true);
@@ -105,6 +112,9 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
         void toggleInspector(scene);
       },
       () => this.restart(),
+      () => {
+        void this.router.navigate(['/']);
+      },
     );
     this.input = input;
 
@@ -151,9 +161,21 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
           this.applyHud(hud);
         },
         onEnd: (result) => {
-          if (this.isStale(generation)) return;
-          this.result.set(result);
+          if (this.isStale(generation) || this.ended) return;
+          this.ended = true;
           this.vehicle?.disable();
+
+          const state = controller.currentState;
+          this.session.publish({
+            result,
+            fuel: state.fuel,
+            distance: state.distance,
+            conesHit: state.conesHit.length,
+            durationMs: controller.durationMs,
+            submission: controller.submission(),
+          });
+
+          void this.router.navigate(['/fin']);
         },
       });
       this.controller = controller;

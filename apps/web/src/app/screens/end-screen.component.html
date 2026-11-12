@@ -1,0 +1,52 @@
+<main class="screen">
+  <section class="card">
+    @if (outcome(); as result) {
+      <p class="eyebrow">{{ succeeded() ? 'Partie terminée' : 'Partie perdue' }}</p>
+      <h1 [class.win]="succeeded()" [class.lose]="!succeeded()">
+        {{ succeeded() ? 'Arrivée atteinte !' : 'Panne sèche' }}
+      </h1>
+      <p class="lead">
+        @if (succeeded()) {
+          L'engin est dans la zone d'arrivée.
+        } @else {
+          Le réservoir est vide avant l'arrivée.
+        }
+      </p>
+
+      <p class="score">
+        <span class="score-label">Score</span>
+        <span class="score-value">{{ result.result.score }}</span>
+      </p>
+
+      <dl class="stats">
+        <div>
+          <dt>Distance</dt>
+          <dd>{{ result.distance.toFixed(1).replace('.', ',') }} m</dd>
+        </div>
+        <div>
+          <dt>Cônes touchés</dt>
+          <dd>{{ result.conesHit }}</dd>
+        </div>
+        <div>
+          <dt>Carburant restant</dt>
+          <dd>{{ result.fuel.toFixed(0) }}</dd>
+        </div>
+        <div>
+          <dt>Durée</dt>
+          <dd>{{ duration() }}</dd>
+        </div>
+      </dl>
+    } @else {
+      <p class="eyebrow">Aucune partie</p>
+      <h1>Aucun résultat à afficher</h1>
+      <p class="lead">Lancez une partie pour voir votre score ici.</p>
+    }
+
+    <div class="actions">
+      <a class="primary" routerLink="/jeu">
+        {{ outcome() ? 'Rejouer' : 'Jouer' }}
+      </a>
+      <a class="secondary" routerLink="/">Accueil</a>
+    </div>
+  </section>
+</main>

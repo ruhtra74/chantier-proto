@@ -39,6 +39,12 @@ export class KeyboardInput {
       return;
     }
 
+    if (key === 'escape') {
+      event.preventDefault();
+      this.onEscape();
+      return;
+    }
+
     if (GAME_KEYS.has(key)) {
       event.preventDefault();
     }
@@ -57,6 +63,7 @@ export class KeyboardInput {
   constructor(
     private readonly onToggleInspector: () => void,
     private readonly onRestart: () => void = () => {},
+    private readonly onEscape: () => void = () => {},
   ) {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);

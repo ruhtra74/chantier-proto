@@ -17,7 +17,7 @@ pur partagé entre le navigateur et un serveur NestJS qui rejoue les sessions.
 | 4     | Déplacement clavier, caméra de poursuite, distance par lots `MOVED`        | ✅      |
 | 5     | Physique Havok (sol, engin, cônes, collisions, arrivée)                    | ✅      |
 | 6     | Intégration domaine (contrôleur, journal, fin de partie, redémarrage)      | ✅      |
-| 7     | Interface (HUD, démarrage, fin, navigation)                                | à faire |
+| 7     | Interface (HUD, démarrage, fin, navigation)                                | ✅      |
 | 8–10  | API NestJS, connexion front/back, mesures et bilan                         | à faire |
 
 ## Prérequis
@@ -43,7 +43,12 @@ pnpm --filter web start   # serveur de développement Angular (http://localhost:
 développement actif du domaine, lancer `pnpm --filter @chantier/domain dev` dans un second terminal
 pour recompiler en continu.
 
-## Scène actuelle (étapes 2–5)
+## Version jouable (étapes 2–7)
+
+Trois écrans reliés par le routeur Angular : accueil (`/`), jeu (`/jeu`) et fin (`/fin`).
+L'accueil rappelle l'objectif, les commandes et le barème ; l'écran de fin affiche la raison de la
+fin de partie, le score et les statistiques (distance, cônes, carburant, durée), avec les actions
+**Rejouer** et **Accueil**. Un accès direct à `/fin` sans partie affiche un message de repli.
 
 La scène charge `engin.glb` (parent `engin`, corps, cabine, quatre roues) et instancie `cone.glb`
 trois fois aux positions du scénario `chantier-1`, sur un sol à grille et une zone d'arrivée.
@@ -51,9 +56,10 @@ trois fois aux positions du scénario `chantier-1`, sur un sol à grille et une 
 L'engin se conduit avec **ZQSD**, **WASD** ou les **flèches** (avant, arrière, gauche, droite).
 La physique Havok le maintient au sol et gère les collisions : il ne peut pas se renverser, chaque
 cône percuté émet un unique `CONE_HIT` et l'arrivée un unique `REACHED_TARGET`. La caméra de
-poursuite suit l'engin en douceur. La distance parcourue est affichée dans le HUD ; elle est émise
-par lots de 100 ms sous forme d'événements `MOVED`, prêts pour le futur `GameController`. `I` ouvre
-l'inspecteur Babylon.
+poursuite suit l'engin en douceur. Le HUD (`app-hud`) affiche FPS, carburant, distance et cônes,
+alimenté par le domaine au rythme des `MOVED` (10 Hz au plus). À la fin de partie, `END` arrête
+l'engin, l'issue est publiée dans `GameSessionService` et le routeur ouvre `/fin`. `R` relance une
+partie, `Échap` revient à l'accueil et `I` ouvre l'inspecteur Babylon.
 
 Le WASM de Havok est copié depuis `node_modules` vers `public/havok/` par
 `apps/web/scripts/copy-havok.mjs` (lancé par `prestart`/`prebuild`, copie non versionnée).

@@ -1,0 +1,55 @@
+<main class="screen">
+  <section class="card">
+    <p class="eyebrow">Prototype technique</p>
+    <h1>Un engin sur un chantier</h1>
+    <p class="lead">
+      Conduisez l'engin jusqu'à la zone d'arrivée en évitant les cônes et sans tomber en panne de
+      carburant. Le score récompense le carburant restant et pénalise chaque cône touché.
+    </p>
+
+    <div class="grid">
+      <article>
+        <h2>Objectif</h2>
+        <ul>
+          <li>Atteindre le disque d'arrivée à {{ target?.x }}, {{ target?.z }} m.</li>
+          <li>Éviter les {{ coneCount }} cônes posés sur le trajet.</li>
+          <li>
+            Gérer les {{ fuelCapacity }} unités de carburant ({{
+              consumptionPerMeter.toFixed(1).replace('.', ',')
+            }}
+            par mètre parcouru).
+          </li>
+        </ul>
+      </article>
+
+      <article>
+        <h2>Commandes</h2>
+        <ul>
+          <li>
+            <kbd>Z</kbd><kbd>Q</kbd><kbd>S</kbd><kbd>D</kbd> ou <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd
+            ><kbd>D</kbd> : conduire
+          </li>
+          <li><kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> : alternative</li>
+          <li><kbd>R</kbd> : recommencer · <kbd>Échap</kbd> : accueil</li>
+          <li><kbd>I</kbd> : inspecteur Babylon</li>
+        </ul>
+      </article>
+
+      <article class="score-rules">
+        <h2>Score</h2>
+        <p>
+          <strong>{{ scoring?.base ?? 0 }}</strong> points de base
+        </p>
+        <p>
+          <strong>− {{ scoring?.penaltyPerConeHit ?? 0 }}</strong> par cône touché
+        </p>
+        <p>
+          <strong>+ {{ scoring?.bonusPerFuelUnit ?? 0 }}</strong> par unité de carburant restante
+        </p>
+      </article>
+    </div>
+
+    <a class="primary" routerLink="/jeu">Démarrer la partie</a>
+    <p class="note">La partie se joue au clavier, en plein écran.</p>
+  </section>
+</main>
