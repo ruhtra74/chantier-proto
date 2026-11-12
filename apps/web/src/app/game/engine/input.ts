@@ -33,6 +33,12 @@ export class KeyboardInput {
       return;
     }
 
+    if (key === 'r') {
+      event.preventDefault();
+      this.onRestart();
+      return;
+    }
+
     if (GAME_KEYS.has(key)) {
       event.preventDefault();
     }
@@ -48,7 +54,10 @@ export class KeyboardInput {
     this.pressed.clear();
   };
 
-  constructor(private readonly onToggleInspector: () => void) {
+  constructor(
+    private readonly onToggleInspector: () => void,
+    private readonly onRestart: () => void = () => {},
+  ) {
     window.addEventListener('keydown', this.handleKeyDown);
     window.addEventListener('keyup', this.handleKeyUp);
     window.addEventListener('blur', this.handleBlur);

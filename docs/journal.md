@@ -127,3 +127,28 @@ décisions prises. Ce journal alimente le bilan (étape 10.8) et le rapport de p
   10,6 m) et un seul `REACHED_TARGET` ; altitude nulle sur tout le trajet, y compris contre la
   paroi ; marche arrière validée ; caméra à 9 m derrière et 4,5 m de haut ; FPS 30–38 en Chrome
   headless avec SwiftShader ; aucune erreur console.
+
+## 2026-11-12 — étape 6 (intégration domaine ↔ moteur)
+
+- Temps passé : à compléter par l'équipe.
+- Tâches réalisées : `GameController` (réception des `EngineEvent`, appel du réducteur pur,
+  distribution des `UPDATE_HUD` et `END`) ; `EventLog` horodaté (source du rejeu, export
+  `SessionSubmission` pour l'API) ; branchement des événements du `VehicleController` au
+  contrôleur ; arrêt de l'engin sur `END` ; redémarrage complet (destruction et recréation du
+  moteur, de la scène, des corps et de l'état) déclenché par `R` en attendant l'écran de l'étape 7 ;
+  HUD enrichi (carburant, résultat et score).
+- Aide de l'IA : écriture du contrôleur et du journal, refactorisation du composant en
+  `startGame`/`teardown`/`restart`, test fonctionnel CDP couvrant arrivée, score, journal,
+  redémarrage et panne sèche.
+- Problèmes rencontrés / solutions :
+  - lors d'un redémarrage, un chargement Havok/GLB encore en cours pouvait s'appliquer à une scène
+    déjà détruite : un compteur de génération invalide les chargements périmés ;
+  - `Engine.dispose()` puis création d'un nouveau moteur sur le même canevas a été vérifié
+    explicitement (le redémarrage recrée bien la scène et la boucle de rendu) ;
+  - les tests doivent comparer la distance du HUD à l'état du domaine, et non à la somme des
+    `MOVED` relevés après branchement du journal.
+- Mesures : arrivée à 22,15 m (zone d'arrivée atteinte à z ≈ 23,2), carburant 66,77, un cône
+  touché, score 1230 (= 1000 − 100 + 5 × 66), 27 entrées de journal, `REACHED_TARGET` à 4 449 ms ;
+  redémarrage par `R` : état neuf (carburant 100, distance 0, journal vide) et 3,6 m parcourus
+  aussitôt après ; panne sèche simulée par un `MOVED` de 200 m : carburant 0, `END` « panne_seche »,
+  score 0, événements suivants ignorés ; aucune erreur console.

@@ -8,6 +8,7 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import type { GameResult } from '@chantier/domain';
 import { getScenario } from '@chantier/domain';
 import { Engine } from '@babylonjs/core/Engines/engine';
 import type { Scene } from '@babylonjs/core/scene';
@@ -24,6 +25,7 @@ import {
   enableHavokPhysics,
 } from './engine/physics';
 import { VehicleController } from './engine/vehicle';
+import { GameController, type HudSnapshot } from './game-controller';
 
 @Component({
   selector: 'app-game-canvas',
@@ -36,9 +38,10 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
   private readonly scenario = getScenario('chantier-1');
 
   readonly fps = signal(0);
+  readonly fuel = signal(0);
   readonly distance = signal(0);
   readonly conesHit = signal(0);
-  readonly arrived = signal(false);
+  readonly result = signal<GameResult | null>(null);
   readonly error = signal<string | null>(null);
   readonly placeholderAssets = !USE_GLB_ASSETS;
 
@@ -47,19 +50,48 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
   private input?: KeyboardInput;
   private assets?: GameAssets;
   private vehicle?: VehicleController;
+  private controller?: GameController;
   private fpsTimer?: number;
   private destroyed = false;
+  /** Incrémenté à chaque démarrage : invalide les chargements asynchrones périmés. */
+  private generation = 0;
 
   private readonly handleResize = (): void => {
     this.engine?.resize();
   };
 
   ngAfterViewInit(): void {
+    void this.startGame();
+  }
+
+  ngOnDestroy(): void {
+    this.destroyed = true;
+    this.generation += 1;
+    this.teardown();
+  }
+
+  /** Redémarrage complet : scène et état recréés, journal repart de zéro. */
+  restart(): void {
+    if (this.destroyed) return;
+
+    this.generation += 1;
+    this.teardown();
+    void this.startGame();
+  }
+
+  private async startGame(): Promise<void> {
     const scenario = this.scenario;
     if (!scenario) {
       this.error.set('Scénario « chantier-1 » introuvable dans le paquet domain.');
       return;
     }
+
+    const generation = ++this.generation;
+    this.error.set(null);
+    this.result.set(null);
+    this.fuel.set(scenario.fuel.capacity);
+    this.distance.set(0);
+    this.conesHit.set(0);
 
     const canvas = this.canvasRef().nativeElement;
     const engine = new Engine(canvas, true, { stencil: true }, true);
@@ -68,53 +100,17 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
     const { scene, camera } = createScene(engine, scenario);
     this.scene = scene;
 
-    const input = new KeyboardInput(() => {
-      void toggleInspector(scene);
-    });
+    const input = new KeyboardInput(
+      () => {
+        void toggleInspector(scene);
+      },
+      () => this.restart(),
+    );
     this.input = input;
-
-    // Le module Havok et les GLB se chargent en parallèle ; aucun corps ne peut être créé
-    // avant que la physique de la scène soit active.
-    void Promise.all([enableHavokPhysics(scene), loadAssets(scene, scenario)])
-      .then(([, assets]) => {
-        if (this.destroyed) return;
-
-        this.assets = assets;
-        createGroundBody(scene);
-        const vehicleBody = createVehicleBody(scene, assets.engineRoot);
-        for (const coneRoot of assets.cones.values()) {
-          createConeBody(scene, coneRoot);
-        }
-
-        this.vehicle = new VehicleController(
-          assets.engineRoot,
-          vehicleBody,
-          input,
-          (event) => {
-            if (this.destroyed) return;
-            if (event.type === 'MOVED') {
-              this.distance.update((total) => total + event.distance);
-            } else if (event.type === 'CONE_HIT') {
-              this.conesHit.update((count) => count + 1);
-            } else if (event.type === 'REACHED_TARGET') {
-              this.arrived.set(true);
-            }
-          },
-          scenario.target,
-        );
-        updateChaseCamera(camera, assets.engineRoot, 0, true);
-      })
-      .catch((error: unknown) => {
-        if (this.destroyed) return;
-        console.error('Échec du chargement de la physique ou des assets', error);
-        this.error.set(
-          `Impossible de démarrer la scène : ${error instanceof Error ? error.message : String(error)}`,
-        );
-      });
 
     window.addEventListener('resize', this.handleResize);
     this.fpsTimer = window.setInterval(() => {
-      this.fps.set(Math.round(engine.getFps()));
+      if (this.engine === engine) this.fps.set(Math.round(engine.getFps()));
     }, 500);
 
     // La boucle de rendu tourne hors de la détection de changements Angular.
@@ -131,11 +127,69 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
         scene.render();
       });
     });
+
+    try {
+      // Le module Havok et les GLB se chargent en parallèle ; aucun corps ne peut être créé
+      // avant que la physique de la scène soit active.
+      const [, assets] = await Promise.all([
+        enableHavokPhysics(scene),
+        loadAssets(scene, scenario),
+      ]);
+      if (this.isStale(generation)) return;
+
+      this.assets = assets;
+      createGroundBody(scene);
+      const vehicleBody = createVehicleBody(scene, assets.engineRoot);
+      for (const coneRoot of assets.cones.values()) {
+        createConeBody(scene, coneRoot);
+      }
+
+      const controller = new GameController({
+        scenario,
+        onHud: (hud) => {
+          if (this.isStale(generation)) return;
+          this.applyHud(hud);
+        },
+        onEnd: (result) => {
+          if (this.isStale(generation)) return;
+          this.result.set(result);
+          this.vehicle?.disable();
+        },
+      });
+      this.controller = controller;
+
+      this.vehicle = new VehicleController(
+        assets.engineRoot,
+        vehicleBody,
+        input,
+        (event) => {
+          if (this.isStale(generation)) return;
+          controller.handleEvent(event);
+        },
+        scenario.target,
+      );
+
+      updateChaseCamera(camera, assets.engineRoot, 0, true);
+    } catch (error: unknown) {
+      if (this.isStale(generation)) return;
+      console.error('Échec du chargement de la physique ou des assets', error);
+      this.error.set(
+        `Impossible de démarrer la scène : ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
   }
 
-  ngOnDestroy(): void {
-    this.destroyed = true;
+  private applyHud(hud: HudSnapshot): void {
+    this.fuel.set(hud.fuel);
+    this.distance.set(hud.distance);
+    this.conesHit.set(hud.conesHit);
+  }
 
+  private isStale(generation: number): boolean {
+    return this.destroyed || generation !== this.generation;
+  }
+
+  private teardown(): void {
     if (this.fpsTimer !== undefined) {
       window.clearInterval(this.fpsTimer);
       this.fpsTimer = undefined;
@@ -146,6 +200,7 @@ export class GameCanvasComponent implements AfterViewInit, OnDestroy {
     this.input = undefined;
     this.vehicle?.dispose();
     this.vehicle = undefined;
+    this.controller = undefined;
     this.assets = undefined;
 
     this.engine?.stopRenderLoop();

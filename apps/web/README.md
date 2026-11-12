@@ -24,8 +24,11 @@ Ouvrir http://localhost:4200. Le script `prestart` recompile `@chantier/domain` 
 - conduite au clavier (ZQSD / WASD / flèches) par vitesses, sans renversement possible ;
 - caméra de poursuite lissée derrière l'engin ;
 - distance parcourue affichée, émise en `MOVED` par lots de 100 ms ;
-- collisions engin ↔ cône (`CONE_HIT` unique par cône) et arrivée (`REACHED_TARGET` unique),
-  comptées dans le HUD ;
+- collisions engin ↔ cône (`CONE_HIT` unique par cône) et arrivée (`REACHED_TARGET` unique) ;
+- `GameController` : événements du moteur → réducteur du domaine → carburant, distance, cônes,
+  score et fin de partie (`END`) ;
+- journal d'événements horodaté (`EventLog`), prêt pour l'envoi à l'API ;
+- redémarrage complet par `R` (moteur, scène, corps et état recréés) ;
 - FPS affiché, inspecteur Babylon sur `I`.
 
 Les assets proviennent de `blender/build_assets.py` (voir `blender/README.md`). Ils sont servis à
@@ -44,7 +47,9 @@ src/app/
 ├─ app.config.ts            configuration Angular
 ├─ app.routes.ts            route unique vers l'écran de jeu
 └─ game/
-   ├─ game-canvas.component.*   crée et détruit le moteur Babylon
+   ├─ game-canvas.component.*   crée, redémarre et détruit le moteur Babylon
+   ├─ game-controller.ts        domaine ↔ moteur : HUD, fin de partie
+   ├─ event-log.ts              journal horodaté des événements
    └─ engine/
       ├─ create-scene.ts        sol, lumières, zone d'arrivée
       ├─ load-assets.ts         GLB (ou primitives de repli), conteneur de l'engin

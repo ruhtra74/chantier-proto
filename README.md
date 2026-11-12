@@ -16,7 +16,8 @@ pur partagé entre le navigateur et un serveur NestJS qui rejoue les sessions.
 | 3     | Application Angular, scène Babylon.js (GLB chargés)                        | ✅      |
 | 4     | Déplacement clavier, caméra de poursuite, distance par lots `MOVED`        | ✅      |
 | 5     | Physique Havok (sol, engin, cônes, collisions, arrivée)                    | ✅      |
-| 6–7   | Intégration domaine (contrôleur, journal), interface                       | à faire |
+| 6     | Intégration domaine (contrôleur, journal, fin de partie, redémarrage)      | ✅      |
+| 7     | Interface (HUD, démarrage, fin, navigation)                                | à faire |
 | 8–10  | API NestJS, connexion front/back, mesures et bilan                         | à faire |
 
 ## Prérequis
