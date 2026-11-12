@@ -43,6 +43,22 @@ pnpm --filter web start   # serveur de développement Angular (http://localhost:
 développement actif du domaine, lancer `pnpm --filter @chantier/domain dev` dans un second terminal
 pour recompiler en continu.
 
+## Index du code (Graphify)
+
+Le prototype est indexé avec [Graphify](https://github.com/Graphify-Labs/graphify) pour réduire le
+contexte nécessaire aux relectures et aux prochaines sessions :
+
+```bash
+graphify update .                     # reconstruit graphify-out/ (sans clé API)
+graphify query "..." --budget 1500    # interroge le graphe
+graphify explain GameController       # un nœud et ses voisins
+graphify export html                  # graphify-out/graph.html
+```
+
+Le rapport navigable est `graphify-out/GRAPH_REPORT.md` ; il couvre le code, les documents et le
+journal. Les artefacts sont générés et ignorés par Git : relancer `graphify update .` après des
+changements de code.
+
 ## Version jouable (étapes 2–7)
 
 Trois écrans reliés par le routeur Angular : accueil (`/`), jeu (`/jeu`) et fin (`/fin`).

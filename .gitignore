@@ -4,6 +4,7 @@ dist/
 apps/web/public/havok/
 coverage/
 .angular/
+graphify-out/
 *.log
 .env
 .env.*
