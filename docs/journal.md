@@ -196,3 +196,34 @@ décisions prises. Ce journal alimente le bilan (étape 10.8) et le rapport de p
     exigés par les modules ES6 manquaient ; ils précèdent maintenant l'import de l'inspecteur.
 - Mesures : `I` ouvre l'inspecteur (44 racines Fluent UI montées), un second `I` le referme
   (0 racine), aucune erreur console ; régression de l'étape 7 repassée (11 contrôles au vert).
+
+## 2026-11-12 — étape 8 (API NestJS)
+
+- Temps passé : à compléter par l'équipe.
+- Tâches réalisées : application `apps/api` (NestJS 12, préfixe `/api`), dépendance au paquet
+  `domain`, Prisma 7 avec SQLite (modèle `Session`, migration `init`), `GET /api/scenarios/:id`,
+  tube de validation Zod réutilisable, module `sessions` (`POST`, liste, détail), vérification par
+  rejeu (`verify-session.ts`) et champ `verified`, tests A1–A6 et tests unitaires du rejeu.
+  La tâche optionnelle 8.9 (servir les GLB depuis l'API) n'a pas été faite.
+- Aide de l'IA : écriture de l'application, choix des versions, configuration Prisma 7, tests, puis
+  vérification par typecheck, lint, tests et appels réels à l'API compilée.
+- Problèmes rencontrés / solutions :
+  - NestJS 12 est publié en ESM uniquement et son gabarit officiel utilise Vitest : les tests d'API
+    sont écrits avec **Vitest + Supertest** au lieu de Jest + Supertest prévu en section 10.2, ce qui
+    aligne l'API sur le reste du dépôt ;
+  - NestJS 12.5.0, publiée le jour même, était bloquée par l'âge minimal de publication de pnpm, qui
+    a ajouté de lui-même des exceptions `minimumReleaseAgeExclude` ; exceptions retirées et version
+    12.4.2 retenue ;
+  - le tag `latest` de `prisma` pointait sur une version candidate 8.0 : version stable 7.10.1
+    retenue. Prisma 7 impose un adaptateur (`@prisma/adapter-better-sqlite3`), un générateur
+    `prisma-client` et un `prisma.config.ts` ; les scripts d'installation de `prisma`,
+    `@prisma/engines` et `better-sqlite3` ont été autorisés dans `allowBuilds` ;
+  - le chemin de la base, calculé depuis le fichier compilé, pointait sous `dist/` : le build utilise
+    `rootDir: src` pour que `src/` et `dist/` soient au même niveau ;
+  - le domaine ignore un `CONE_HIT` inconnu ; côté serveur, un tel événement rend la session
+    irrecevable (400), conformément à la section 7.6. Les événements postérieurs à la fin restent
+    ignorés ;
+  - la limite JSON par défaut d'Express (100 Ko) est portée à 1 Mo pour les parties longues.
+- Mesures : `pnpm --filter api test` → 16 tests réussis en 4,3 s (dont la base recréée) ; session
+  honnête vérifiée (score 1235), score falsifié enregistré avec `verified = false` ; démarrage à
+  froid (`pnpm --filter api dev` sans base) validé.

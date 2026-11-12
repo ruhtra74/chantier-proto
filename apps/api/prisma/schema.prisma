@@ -1,0 +1,29 @@
+// Modèle de données du prototype (section 6.5 du document de conception).
+// L'URL de la base est fournie par prisma.config.ts (Prisma 7).
+
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Session {
+  id              String   @id @default(uuid())
+  userId          String   @default("demo")
+  scenarioId      String
+  scenarioVersion Int
+  status          String
+  reason          String?
+  clientScore     Int
+  serverScore     Int
+  verified        Boolean
+  durationMs      Int
+  /// Journal d'événements sérialisé en JSON.
+  eventsJson      String
+  createdAt       DateTime @default(now())
+}

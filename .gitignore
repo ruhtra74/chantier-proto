@@ -3,6 +3,9 @@ dist/
 # Copié depuis node_modules par apps/web/scripts/copy-havok.mjs.
 apps/web/public/havok/
 coverage/
+# Client Prisma généré (prisma generate) et bases SQLite locales.
+apps/api/src/generated/
+apps/api/data/
 .angular/
 graphify-out/
 *.log

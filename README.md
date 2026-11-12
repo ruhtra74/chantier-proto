@@ -18,7 +18,8 @@ pur partagé entre le navigateur et un serveur NestJS qui rejoue les sessions.
 | 5     | Physique Havok (sol, engin, cônes, collisions, arrivée)                    | ✅      |
 | 6     | Intégration domaine (contrôleur, journal, fin de partie, redémarrage)      | ✅      |
 | 7     | Interface (HUD, démarrage, fin, navigation)                                | ✅      |
-| 8–10  | API NestJS, connexion front/back, mesures et bilan                         | à faire |
+| 8     | API NestJS (scénarios, sessions, vérification par rejeu, Prisma/SQLite)    | ✅      |
+| 9–10  | Connexion front/back, mesures et bilan                                     | à faire |
 
 ## Prérequis
 
@@ -37,6 +38,7 @@ pnpm format           # Prettier
 pnpm build            # build de tous les paquets
 
 pnpm --filter web start   # serveur de développement Angular (http://localhost:4200)
+pnpm --filter api dev     # API NestJS en mode watch (http://localhost:3000/api)
 ```
 
 `start` reconstruit automatiquement `@chantier/domain` avant de lancer Angular. Pendant un
@@ -92,7 +94,8 @@ chantier-proto/
 ├─ docs/journal.md          journal de bord (temps, IA, problèmes, mesures)
 ├─ packages/domain/         règles métier pures, partagées front + back
 └─ apps/
-   └─ web/                  application Angular + Babylon.js
+   ├─ web/                  application Angular + Babylon.js
+   └─ api/                  API NestJS + Prisma (SQLite), vérification des sessions par rejeu
 ```
 
 ## Règles d'architecture
